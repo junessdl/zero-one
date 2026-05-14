@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZERO ONE — Built for Runners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;}
+
+/* NAV */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid #e8e8e8;position:sticky;top:0;background:#fff;z-index:50;}
+.nav-links{display:flex;gap:28px;list-style:none;}
+.nav-links a{text-decoration:none;color:#111;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;}
+.nav-links a:hover{color:#777;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.2em;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.nav-right{display:flex;align-items:center;gap:20px;}
+.cart-btn{background:#111;color:#fff;border:none;padding:8px 18px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;}
+.cart-btn:hover{background:#333;}
+.cart-count{background:#fff;color:#111;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:600;}
+
+/* PAGES */
+.page{display:none;} .page.active{display:block;}
+
+/* TICKER */
+.ticker{background:#111;color:#fff;padding:9px 0;overflow:hidden;white-space:nowrap;}
+.ticker-inner{display:inline-flex;animation:tick 20s linear infinite;}
+.ticker-inner span{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:0.2em;padding:0 32px;}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* HERO */
+.hero{padding:64px 40px 48px;display:flex;align-items:flex-end;gap:0;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:0.88;flex:1;}
+.hero-right{padding-bottom:12px;padding-left:36px;}
+.hero-sub{font-size:12px;color:#777;max-width:180px;line-height:1.8;margin-bottom:16px;}
+.shop-btn{background:#111;color:#fff;border:none;padding:12px 28px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.shop-btn:hover{background:#333;}
+
+/* PRODUCTS */
+.products{padding:40px;}
+.sec-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.05em;}
+.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.prod-card{background:#f4f4f2;cursor:pointer;position:relative;overflow:hidden;}
+.prod-card:hover .prod-img-wrap{transform:scale(1.04);}
+.prod-img-wrap{transition:transform 0.35s ease;padding:28px;height:240px;display:flex;align-items:center;justify-content:center;}
+.prod-info{background:#fff;padding:14px 16px;border-top:1px solid #e8e8e8;}
+.prod-name{font-size:12px;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;}
+.prod-price{font-size:13px;color:#555;margin-top:4px;}
+.prod-badge{position:absolute;top:12px;left:12px;background:#111;color:#fff;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 9px;}
+
+/* FEATURED */
+.featured{padding:0 40px 40px;display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.feat-card{background:#111;color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;min-height:280px;cursor:pointer;}
+.feat-card.light{background:#eeebe5;color:#111;}
+.feat-title{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:0.92;letter-spacing:0.02em;}
+.feat-desc{font-size:12px;color:#888;line-height:1.8;max-width:240px;margin-top:10px;}
+.feat-card.light .feat-desc{color:#888;}
+.feat-cta{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:20px;border-bottom:1px solid currentColor;padding-bottom:3px;width:fit-content;}
+
+/* BRAND STRIP */
+.brand-strip{padding:40px;border-top:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;display:flex;align-items:center;justify-content:space-between;}
+.brand-stat{text-align:center;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:0.04em;}
+.stat-label{font-size:11px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;}
+
+/* FOOTER */
+.footer{padding:28px 40px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e8e8e8;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.2em;}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:11px;color:#aaa;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;}
+.footer-copy{font-size:11px;color:#ccc;}
+
+/* PRODUCT DETAIL */
+.detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:500px;}
+.detail-img{background:#f4f4f2;display:flex;align-items:center;justify-content:center;padding:48px;}
+.detail-info{padding:40px;}
+.back-link{font-size:11px;color:#aaa;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;margin-bottom:20px;}
+.back-link:hover{color:#111;}
+.detail-tag{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#999;margin-bottom:8px;}
+.detail-name{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:0.95;letter-spacing:0.02em;margin-bottom:8px;}
+.detail-price{font-size:24px;font-weight:500;margin-bottom:4px;}
+.detail-compare{font-size:14px;color:#aaa;text-decoration:line-through;margin-bottom:20px;}
+.detail-desc{font-size:13px;color:#666;line-height:1.8;margin-bottom:24px;}
+.variant-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:8px;}
+.variant-options{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.variant-btn{padding:7px 14px;border:1px solid #ddd;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;background:#fff;transition:all 0.15s;}
+.variant-btn:hover{border-color:#111;}
+.variant-btn.selected{border-color:#111;background:#111;color:#fff;}
+.variant-btn.out{color:#ccc;border-color:#eee;cursor:not-allowed;}
+.qty-wrap{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.qty-btn{width:32px;height:32px;border:1px solid #ddd;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qty-btn:hover{border-color:#111;}
+.qty-num{font-size:15px;font-weight:500;min-width:24px;text-align:center;}
+.add-cart-btn{width:100%;padding:14px;background:#111;color:#fff;border:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:12px;}
+.add-cart-btn:hover{background:#333;}
+.detail-meta{font-size:11px;color:#aaa;line-height:2.2;}
+
+/* CART */
+.cart-wrap{max-width:640px;margin:0 auto;padding:32px 40px;}
+.cart-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.05em;margin-bottom:20px;}
+.cart-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #e8e8e8;}
+.cart-thumb{width:64px;height:64px;background:#f4f4f2;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.cart-item-name{font-size:13px;font-weight:500;}
+.cart-item-variant{font-size:11px;color:#aaa;margin-top:2px;}
+.cart-item-price{font-size:13px;margin-top:4px;}
+.cart-item-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.cart-remove{font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline;}
+.cart-remove:hover{color:#e24b4a;}
+.cart-summary{background:#f8f8f6;padding:20px;margin-top:16px;border-radius:4px;}
+.summary-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;}
+.summary-row.total{font-size:15px;font-weight:500;border-top:1px solid #ddd;padding-top:10px;margin-top:4px;}
+.checkout-btn{width:100%;padding:14px;background:#111;color:#fff;border:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;}
+.checkout-btn:hover{background:#333;}
+.empty-cart{text-align:center;padding:64px 0;color:#aaa;}
+.empty-cart i{font-size:40px;margin-bottom:12px;display:block;}
+.continue-link{font-size:11px;color:#aaa;cursor:pointer;text-decoration:underline;text-align:center;margin-top:12px;display:block;}
+.continue-link:hover{color:#111;}
+
+/* CHECKOUT */
+.checkout-wrap{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:500px;}
+.checkout-form{padding:36px 32px;border-right:1px solid #e8e8e8;}
+.checkout-summary-col{padding:36px 32px;background:#f8f8f6;}
+.checkout-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:20px;}
+.form-section{margin-bottom:20px;}
+.form-section h4{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-field{margin-bottom:10px;}
+.form-field label{display:block;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#888;margin-bottom:4px;}
+.form-field input,.form-field select{width:100%;padding:9px 11px;border:1px solid #ddd;font-size:12px;font-family:'DM Sans',sans-serif;color:#111;background:#fff;}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:#111;}
+.pay-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.pay-opt{border:1px solid #ddd;padding:10px 12px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:7px;transition:all 0.15s;background:#fff;font-family:'DM Sans',sans-serif;}
+.pay-opt:hover{border-color:#111;}
+.pay-opt.selected{border-color:#111;background:#f8f8f8;}
+.pay-opt i{font-size:16px;}
+.place-btn{width:100%;padding:14px;background:#111;color:#fff;border:none;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.place-btn:hover{background:#333;}
+.order-line{display:flex;justify-content:space-between;font-size:12px;padding:8px 0;border-bottom:1px solid #eee;}
+.order-line:last-of-type{border-bottom:none;}
+
+/* SUCCESS */
+.success-wrap{max-width:480px;margin:60px auto;text-align:center;padding:0 40px;}
+.success-icon{width:56px;height:56px;background:#eaf3de;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;}
+.success-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:0.05em;margin-bottom:8px;}
+.success-sub{font-size:13px;color:#777;line-height:1.8;margin-bottom:24px;}
+.order-ref{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;background:#f4f4f2;padding:12px 24px;display:inline-block;margin-bottom:24px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:10px 18px;font-size:12px;border-radius:4px;display:none;z-index:999;animation:fadeup 0.2s ease;}
+@keyframes fadeup{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav{padding:14px 20px;}
+  .hero{padding:40px 20px 32px;flex-direction:column;gap:20px;}
+  .hero-title{font-size:56px;}
+  .hero-right{padding-left:0;}
+  .products{padding:24px 20px;}
+  .prod-grid{grid-template-columns:1fr 1fr;}
+  .featured{padding:0 20px 24px;grid-template-columns:1fr;}
+  .brand-strip{padding:24px 20px;flex-wrap:wrap;gap:20px;}
+  .footer{padding:20px;flex-direction:column;gap:12px;text-align:center;}
+  .detail-layout{grid-template-columns:1fr;}
+  .checkout-wrap{grid-template-columns:1fr;}
+  .cart-wrap{padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Main</a></li>
+    <li><a onclick="showPage('home')">Shop</a></li>
+    <li><a onclick="showPage('policy')">Policy</a></li>
+  </ul>
+  <div class="logo" onclick="showPage('home')">
+    <img src="logo.png" alt="ZERO ONE" style="width:40px;height:40px;object-fit:contain;">
+      <defs><clipPath id="cs"><rect x="4" y="4" width="92" height="92" rx="18"/></clipPath></defs>
+      <polygon points="4,22 4,4 62,4 28,38" fill="#111" clip-path="url(#cs)"/>
+      <polygon points="30,10 96,10 96,44 34,44 34,30" fill="#111" clip-path="url(#cs)"/>
+      <polygon points="66,10 96,10 96,44 82,44 66,27" fill="#fff" clip-path="url(#cs)"/>
+      <polygon points="82,10 96,22 82,44 66,27" fill="#111" clip-path="url(#cs)"/>
+      <polygon points="4,56 34,56 34,96 4,82" fill="#111" clip-path="url(#cs)"/>
+      <polygon points="18,56 34,56 34,72 18,72" fill="#fff" clip-path="url(#cs)"/>
+      <polygon points="38,60 96,60 96,96 74,96" fill="#111" clip-path="url(#cs)"/>
+    </svg>
+    ZERO ONE
+  </div>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="showPage('cart')">
+      <i class="ti ti-shopping-bag"></i> Cart
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span><span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
+      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span><span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
+    </div>
+  </div>
+  <div class="hero">
+    <div class="hero-title">MOVE<br>FAST.<br>LOOK<br>SHARP.</div>
+    <div class="hero-right">
+      <p class="hero-sub">Gear built for runners who take performance and style seriously.</p>
+      <button class="shop-btn" onclick="document.getElementById('shopSection').scrollIntoView({behavior:'smooth'})">Shop Now →</button>
+    </div>
+  </div>
+  <div class="products" id="shopSection">
+    <div class="sec-header">
+      <div class="sec-title">New Arrivals</div>
+    </div>
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+  <div class="featured">
+    <div class="feat-card" onclick="showPage('home')">
+      <div>
+        <div class="feat-title">APPAREL<br>DROP 01</div>
+        <p class="feat-desc">Lightweight, breathable, designed for the long run. Built for pace, made to last.</p>
+      </div>
+      <div class="feat-cta">Explore Collection →</div>
+    </div>
+    <div class="feat-card light" onclick="showPage('home')">
+      <div>
+        <div class="feat-title">RUN<br>READY<br>GEAR</div>
+        <p class="feat-desc">Everything from start line to finish. Caps, socks, tape — all in one place.</p>
+      </div>
+      <div class="feat-cta">Shop Accessories →</div>
+    </div>
+  </div>
+  <div class="brand-strip">
+    <div class="brand-stat"><div class="stat-num">01</div><div class="stat-label">Brand Origin</div></div>
+    <div class="brand-stat"><div class="stat-num">12K+</div><div class="stat-label">Runners Equipped</div></div>
+    <div class="brand-stat"><div class="stat-num">100%</div><div class="stat-label">Performance Focused</div></div>
+    <div class="brand-stat"><div class="stat-num">0</div><div class="stat-label">Compromises</div></div>
+  </div>
+  <footer class="footer">
+    <div class="footer-logo">ZERO ONE™</div>
+    <div class="footer-links">
+      <a href="#">Instagram</a>
+      <a onclick="showPage('policy')">Policy</a>
+      <a href="mailto:hello@zeroone.co.th">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 ZERO ONE</div>
+  </footer>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<div class="page" id="page-detail">
+  <div class="detail-layout">
+    <div class="detail-img" id="detailImg"></div>
+    <div class="detail-info">
+      <div class="back-link" onclick="showPage('home')"><i class="ti ti-arrow-left"></i> Back to Shop</div>
+      <div class="detail-tag" id="detailCat"></div>
+      <div class="detail-name" id="detailName"></div>
+      <div class="detail-price" id="detailPrice"></div>
+      <div class="detail-compare" id="detailCompare"></div>
+      <div class="detail-desc" id="detailDesc"></div>
+      <div class="variant-label">Color / Size</div>
+      <div class="variant-options" id="variantOpts"></div>
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-num" id="qtyNum">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <button class="add-cart-btn" onclick="addToCart()"><i class="ti ti-shopping-bag"></i> Add to Cart</button>
+      <div class="detail-meta">
+        SKU: <span id="detailSku"></span><br>
+        Category: <span id="detailCatMeta"></span><br>
+        Free shipping on orders over ฿1,500
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CART -->
+<div class="page" id="page-cart">
+  <div class="cart-wrap">
+    <div class="cart-title">Your Cart</div>
+    <div id="cartItems"></div>
+    <div id="cartSummary"></div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div class="page" id="page-checkout">
+  <div class="checkout-wrap">
+    <div class="checkout-form">
+      <div class="back-link" onclick="showPage('cart')" style="margin-bottom:16px;display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#aaa;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;"><i class="ti ti-arrow-left"></i> Back to Cart</div>
+      <div class="checkout-title">Checkout</div>
+      <div class="form-section">
+        <h4>Contact Info</h4>
+        <div class="form-field"><label>Full Name</label><input type="text" id="cfName" placeholder="Somchai Jaidee"></div>
+        <div class="form-row">
+          <div class="form-field"><label>Email</label><input type="email" id="cfEmail" placeholder="you@email.com"></div>
+          <div class="form-field"><label>Phone</label><input type="tel" id="cfPhone" placeholder="08X-XXX-XXXX"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <h4>Shipping Address</h4>
+        <div class="form-field"><label>Address</label><input type="text" id="cfAddr" placeholder="123 Sukhumvit Rd, Apt 4"></div>
+        <div class="form-row">
+          <div class="form-field"><label>City / District</label><input type="text" id="cfCity" placeholder="Khlong Toei"></div>
+          <div class="form-field"><label>Postcode</label><input type="text" id="cfZip" placeholder="10110"></div>
+        </div>
+        <div class="form-field"><label>Province</label>
+          <select id="cfProv">
+            <option>Bangkok</option><option>Chiang Mai</option><option>Phuket</option>
+            <option>Chonburi</option><option>Khon Kaen</option><option>Nakhon Ratchasima</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <h4>Payment Method</h4>
+        <div class="pay-options">
+          <div class="pay-opt selected" onclick="selectPay(this)"><i class="ti ti-qrcode"></i> PromptPay</div>
+          <div class="pay-opt" onclick="selectPay(this)"><i class="ti ti-credit-card"></i> Credit Card</div>
+          <div class="pay-opt" onclick="selectPay(this)"><i class="ti ti-building-bank"></i> Bank Transfer</div>
+          <div class="pay-opt" onclick="selectPay(this)"><i class="ti ti-cash"></i> COD</div>
+        </div>
+      </div>
+      <button class="place-btn" onclick="placeOrder()">Place Order →</button>
+    </div>
+    <div class="checkout-summary-col">
+      <div class="checkout-title">Order Summary</div>
+      <div id="checkoutLines"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #ddd;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;"><span style="color:#888;">Subtotal</span><span id="cSubtotal"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;"><span style="color:#888;">Shipping</span><span id="cShipping"></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:500;border-top:1px solid #ddd;padding-top:10px;margin-top:6px;"><span>Total</span><span id="cTotal"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="page" id="page-success">
+  <div class="success-wrap">
+    <div class="success-icon"><i class="ti ti-check" style="color:#3b6d11;font-size:22px;"></i></div>
+    <div class="success-title">Order Placed!</div>
+    <p class="success-sub">ຂອບໃຈທີ່ສັ່ງຊື້ກັບ ZERO ONE<br>ເຮົາຈະແຈ້ງການຈັດສົ່ງທາງ Email ທີ່ທ່ານລົງທະບຽນໄວ້ ພາຍໃນ 24 ຊົ່ວໂມງ</p>
+    <div class="order-ref" id="orderRef">Z1-0025</div><br>
+    <button class="shop-btn" onclick="showPage('home')" style="margin-top:12px;">← Continue Shopping</button>
+  </div>
+</div>
+
+<!-- POLICY -->
+<div class="page" id="page-policy">
+  <div style="max-width:720px;margin:0 auto;padding:40px;">
+    <div class="back-link" onclick="showPage('home')"><i class="ti ti-arrow-left"></i> Back</div>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.05em;margin-bottom:32px;">Policy & Shipping</h1>
+    <div style="margin-bottom:28px;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Shipping</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">สั่งซื้อก่อน 14:00 น. จัดส่งวันเดียวกัน (วันทำการ) · กรุงเทพและปริมณฑล 1–2 วัน ค่าส่ง ฿50 · ต่างจังหวัด 2–4 วัน ค่าส่ง ฿60–70 · <strong>ฟรีค่าส่งเมื่อสั่งครบ ฿1,500</strong></p>
+    </div>
+    <div style="margin-bottom:28px;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Return Policy</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">รับคืนสินค้าภายใน 7 วันหลังได้รับ · สินค้าต้องอยู่ในสภาพเดิม ไม่ผ่านการใช้งาน พร้อมป้ายและบรรจุภัณฑ์ครบ · สินค้า Sale ไม่รับคืน · ลูกค้าเป็นผู้รับผิดชอบค่าจัดส่งคืน</p>
+    </div>
+    <div style="margin-bottom:28px;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Contact</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">📧 hello@zeroone.co.th · 📱 Instagram: @zeroonethai · ⏰ ตอบกลับภายใน 24 ชั่วโมง (วันทำการ)</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const products = [
+  {id:1,name:'Trucker Cap Z1 Black',cat:'Cap',sku:'Z1-CAP-001',price:890,compare:990,stock:42,badge:'New',
+   desc:'Classic trucker cap with bold ZERO ONE branding. Mesh back for breathability — perfect for long run days or casual wear. Adjustable snapback closure fits all sizes.',
+   variants:['Black / One Size','White / One Size','Navy / One Size'],variantStock:[42,7,0]},
+  {id:2,name:'Run Sock Performance',cat:'Sock',sku:'Z1-SOC-001',price:390,compare:0,stock:120,badge:'',
+   desc:'High-performance running sock with arch support, moisture-wicking fabric, and cushioned sole. Built to go the distance in comfort and style.',
+   variants:['White / S-M','White / L-XL','Black / S-M','Black / L-XL'],variantStock:[60,60,55,45]},
+  {id:3,name:'Enduro Tape Black',cat:'Tape',sku:'Z1-TAP-001',price:590,compare:0,stock:55,badge:'Best Seller',
+   desc:'Kinesiology tape engineered for endurance athletes. Extra-strong adhesive, flexible support, water-resistant. 5m per roll.',
+   variants:['Black 5m','White 5m'],variantStock:[55,3]},
+  {id:4,name:'Trucker Cap Z1 White',cat:'Cap',sku:'Z1-CAP-002',price:890,compare:0,stock:7,badge:'',
+   desc:'Clean white version of the Z1 Trucker Cap. Lightweight mesh construction with adjustable snapback fit.',
+   variants:['White / One Size'],variantStock:[7]},
+  {id:5,name:'Run Sock Compression',cat:'Sock',sku:'Z1-SOC-002',price:490,compare:0,stock:30,badge:'',
+   desc:'Compression running sock for recovery and long-distance performance. Graduated compression from ankle to calf.',
+   variants:['White / S-M','White / L-XL'],variantStock:[15,15]},
+  {id:6,name:'Enduro Tape White',cat:'Tape',sku:'Z1-TAP-002',price:590,compare:0,stock:3,badge:'Low Stock',
+   desc:'White version of our Enduro Tape. Same high-adhesion formula in a clean white colorway.',
+   variants:['White 5m'],variantStock:[3]},
+];
+
+const svgs = {
+  Cap:`<svg width="130" height="100" viewBox="0 0 130 100"><ellipse cx="65" cy="86" rx="54" ry="6" fill="#ddd"/><path d="M14,72 Q14,16 65,16 Q116,16 116,72 Z" fill="#1a1a1a"/><path d="M14,72 L116,72 L122,80 L8,80 Z" fill="#0d0d0d"/><rect x="8" y="80" width="114" height="5" rx="2.5" fill="#333"/><text x="65" y="52" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold" letter-spacing="2">ZERO ONE</text></svg>`,
+  Sock:`<svg width="100" height="130" viewBox="0 0 100 130"><path d="M35,6 L35,80 Q35,106 58,106 Q81,106 81,80 L81,74 L67,74 L67,80 Q67,90 58,90 Q49,90 49,80 L49,6 Z" fill="#e0e0de" stroke="#ccc" stroke-width="1"/><line x1="35" y1="22" x2="49" y2="22" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="36" x2="49" y2="36" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="50" x2="49" y2="50" stroke="#bbb" stroke-width="1.5"/><text x="58" y="98" text-anchor="middle" fill="#aaa" font-size="6" font-family="sans-serif" letter-spacing="1.5">ZERO ONE</text></svg>`,
+  Tape:`<svg width="160" height="100" viewBox="0 0 160 100"><rect x="6" y="12" width="50" height="68" rx="4" fill="#c9a87a" stroke="#b89060" stroke-width="1"/><rect x="12" y="18" width="38" height="56" rx="2" fill="#d8b98e"/><text x="31" y="49" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ZERO</text><text x="31" y="60" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ONE</text><path d="M58,46 Q80,26 138,34 L138,41 Q82,34 64,54 Z" fill="#111"/><path d="M58,52 Q80,34 136,42 L136,49 Q80,42 64,60 Z" fill="#111"/><path d="M58,58 Q80,42 134,50 L134,57 Q80,50 64,66 Z" fill="#111"/></svg>`
+};
+
+let cart=[], currentProduct=null, currentQty=1, currentVariant=0, orderNum=24;
+
+function renderProducts(){
+  document.getElementById('prodGrid').innerHTML=products.map(p=>`
+    <div class="prod-card" onclick="openProduct(${p.id})">
+      ${p.badge?`<div class="prod-badge">${p.badge}</div>`:''}
+      <div class="prod-img-wrap">${svgs[p.cat]||svgs['Tape']}</div>
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-price">฿${p.price.toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+}
+
+function openProduct(id){
+  currentProduct=products.find(p=>p.id===id);
+  currentQty=1; currentVariant=0;
+  document.getElementById('detailImg').innerHTML=svgs[currentProduct.cat]||svgs['Tape'];
+  document.getElementById('detailCat').textContent=currentProduct.cat;
+  document.getElementById('detailName').textContent=currentProduct.name;
+  document.getElementById('detailPrice').textContent='฿'+currentProduct.price.toLocaleString();
+  const comp=document.getElementById('detailCompare');
+  comp.textContent=currentProduct.compare?'฿'+currentProduct.compare.toLocaleString():'';
+  comp.style.display=currentProduct.compare?'block':'none';
+  document.getElementById('detailDesc').textContent=currentProduct.desc;
+  document.getElementById('detailSku').textContent=currentProduct.sku;
+  document.getElementById('detailCatMeta').textContent=currentProduct.cat;
+  document.getElementById('qtyNum').textContent='1';
+  renderVariants(); showPage('detail');
+}
+
+function renderVariants(){
+  document.getElementById('variantOpts').innerHTML=currentProduct.variants.map((v,i)=>{
+    const out=currentProduct.variantStock[i]===0;
+    return `<button class="variant-btn ${i===currentVariant?'selected':''} ${out?'out':''}" ${out?'disabled':''} onclick="selectVariant(${i})">${v}${out?' · sold out':''}</button>`;
+  }).join('');
+}
+
+function selectVariant(i){currentVariant=i;renderVariants();}
+function changeQty(d){currentQty=Math.max(1,currentQty+d);document.getElementById('qtyNum').textContent=currentQty;}
+
+function addToCart(){
+  if(!currentProduct)return;
+  const variant=currentProduct.variants[currentVariant];
+  const key=currentProduct.id+'-'+currentVariant;
+  const ex=cart.find(c=>c.key===key);
+  if(ex) ex.qty+=currentQty;
+  else cart.push({key,id:currentProduct.id,name:currentProduct.name,cat:currentProduct.cat,variant,price:currentProduct.price,qty:currentQty});
+  updateCartCount(); showToast('Added to cart ✓');
+}
+
+function updateCartCount(){
+  document.getElementById('cartCount').textContent=cart.reduce((s,c)=>s+c.qty,0);
+}
+
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  if(!cart.length){
+    el.innerHTML='<div class="empty-cart"><i class="ti ti-shopping-bag"></i><div style="font-size:14px;margin-bottom:6px;">Your cart is empty</div><div style="font-size:12px;color:#bbb;">Go pick something good</div></div>';
+    document.getElementById('cartSummary').innerHTML='<a class="continue-link" onclick="showPage(\'home\')">← Continue Shopping</a>';
+    return;
+  }
+  el.innerHTML=cart.map(c=>`
+    <div class="cart-item">
+      <div class="cart-thumb"><div style="transform:scale(0.36);transform-origin:center;width:180%;height:180%;display:flex;align-items:center;justify-content:center;">${svgs[c.cat]||''}</div></div>
+      <div>
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-variant">${c.variant}</div>
+        <div class="cart-item-price">฿${c.price.toLocaleString()} × ${c.qty}</div>
+      </div>
+      <div class="cart-item-right">
+        <span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span>
+        <span class="cart-remove" onclick="removeFromCart('${c.key}')">Remove</span>
+      </div>
+    </div>`).join('');
+  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const ship=sub>=1500?0:60;
+  document.getElementById('cartSummary').innerHTML=`
+    <div class="cart-summary">
+      <div class="summary-row"><span style="color:#777;">Subtotal</span><span>฿${sub.toLocaleString()}</span></div>
+      <div class="summary-row"><span style="color:#777;">Shipping</span><span>${ship===0?'<span style="color:#3b6d11;font-weight:500;">Free</span>':'฿'+ship}</span></div>
+      ${sub<1500?`<div style="font-size:11px;color:#888;margin-top:-2px;">สั่งเพิ่มอีก ฿${(1500-sub).toLocaleString()} รับส่งฟรี</div>`:''}
+      <div class="summary-row total"><span>Total</span><span>฿${(sub+ship).toLocaleString()}</span></div>
+    </div>
+    <button class="checkout-btn" onclick="goCheckout()">Proceed to Checkout →</button>
+    <a class="continue-link" onclick="showPage('home')">← Continue Shopping</a>`;
+}
+
+function removeFromCart(key){cart=cart.filter(c=>c.key!==key);updateCartCount();renderCart();}
+
+function goCheckout(){
+  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const ship=sub>=1500?0:60;
+  document.getElementById('checkoutLines').innerHTML=cart.map(c=>`
+    <div class="order-line"><span>${c.name} × ${c.qty}<br><span style="color:#aaa;font-size:11px;">${c.variant}</span></span><span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span></div>`).join('');
+  document.getElementById('cSubtotal').textContent='฿'+sub.toLocaleString();
+  document.getElementById('cShipping').textContent=ship===0?'Free':'฿'+ship;
+  document.getElementById('cTotal').textContent='฿'+(sub+ship).toLocaleString();
+  showPage('checkout');
+}
+
+function selectPay(el){
+  document.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function placeOrder(){
+  const name=document.getElementById('cfName').value.trim();
+  const email=document.getElementById('cfEmail').value.trim();
+  if(!name){showToast('กรุณากรอกชื่อ');return;}
+  if(!email){showToast('กรุณากรอกอีเมล');return;}
+  orderNum++;
+  document.getElementById('orderRef').textContent='Z1-0'+String(orderNum).padStart(3,'0');
+  cart=[]; updateCartCount(); showPage('success');
+}
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(p==='cart')renderCart();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  setTimeout(()=>{t.style.display='none';},2000);
+}
+
+renderProducts();
+</script>
+</body>
+</html>
