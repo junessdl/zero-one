@@ -361,15 +361,15 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
     <h1 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.05em;margin-bottom:32px;">Policy & Shipping</h1>
     <div style="margin-bottom:28px;">
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Shipping</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">สั่งซื้อก่อน 14:00 น. จัดส่งวันเดียวกัน (วันทำการ) · กรุงเทพและปริมณฑล 1–2 วัน ค่าส่ง ฿50 · ต่างจังหวัด 2–4 วัน ค่าส่ง ฿60–70 · <strong>ฟรีค่าส่งเมื่อสั่งครบ ฿1,500</strong></p>
+      <p style="font-size:13px;color:#555;line-height:1.9;">ສັ່ງຊື້ກ່ອນ 14:00 . ຈັດສົ່ງມື້ດຽວກັນ (ມື້ປົກກະຕິ) · ນະຄອນຫຼວງ 1–2 ມື້ ຄ່າສົ່ງ ฿50 · ແຂວງອື່ນ 2–4 ວັນ ຄ່າສົ່ງ ฿60–70 · <strong>ຟີຄ່າສົ່ງເມື່ອສັ່ງຄົບ ฿1,500</strong></p>
     </div>
     <div style="margin-bottom:28px;">
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Return Policy</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">รับคืนสินค้าภายใน 7 วันหลังได้รับ · สินค้าต้องอยู่ในสภาพเดิม ไม่ผ่านการใช้งาน พร้อมป้ายและบรรจุภัณฑ์ครบ · สินค้า Sale ไม่รับคืน · ลูกค้าเป็นผู้รับผิดชอบค่าจัดส่งคืน</p>
+      <p style="font-size:13px;color:#555;line-height:1.9;">ຮັບຄືນສິນຄ້າພາຍໃນ 7 ວັນຫຼັງໄດ້ຮັບ · ສິນຄ້າຕ້ອງຢູ່ໃນສະພາບເດີມ ບໍ່ຜ່ານການໃຊ້ງານ ພ້ອມປ້າຍແລະບັນຈຸພັນຄົບ · ສິນຄ້າ Sale ບໍ່ຮັບຄືນ · ລູກຄ້າເປັນຜູ້ຮັບຜິດຊອບຄ່າຈັດສົ່ງຄືນ</p>
     </div>
     <div style="margin-bottom:28px;">
       <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Contact</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">📧 hello@zeroone.co.th · 📱 Instagram: @zeroonethai · ⏰ ตอบกลับภายใน 24 ชั่วโมง (วันทำการ)</p>
+      <p style="font-size:13px;color:#555;line-height:1.9;">📧 hello@zeroone.co.th · 📱 Instagram: @zeroonethai · ⏰ ຕອບກັບພາຍໃນ 24 ຊົ່ວໂມງ (ມື້ທຳການ)</p>
     </div>
   </div>
 </div>
@@ -513,8 +513,8 @@ function selectPay(el){
 function placeOrder(){
   const name=document.getElementById('cfName').value.trim();
   const email=document.getElementById('cfEmail').value.trim();
-  if(!name){showToast('กรุณากรอกชื่อ');return;}
-  if(!email){showToast('กรุณากรอกอีเมล');return;}
+  if(!name){showToast('ກະລຸນາກອກຊື່');return;}
+  if(!email){showToast('ກະລຸນາກອກອີເມວ');return;}
   orderNum++;
   document.getElementById('orderRef').textContent='Z1-0'+String(orderNum).padStart(3,'0');
   cart=[]; updateCartCount(); showPage('success');
