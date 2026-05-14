@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZERO ONE — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, push, remove, update }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCrkIyAjDK5uHBZaokwAEcxDgjGolxDSCc",
+  authDomain: "zeroone-shop.firebaseapp.com",
+  databaseURL: "https://zeroone-shop-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "zeroone-shop",
+  storageBucket: "zeroone-shop.firebasestorage.app",
+  messagingSenderId: "142840215835",
+  appId: "1:142840215835:web:de662d87798ea25ffb7bbe"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+/* ─── helpers ─────────────────────────────────── */
+const toast = msg => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2200);
+};
+
+const fmtDate = ts => ts ? new Date(ts).toLocaleDateString('th-TH',
+  {day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+
+/* ─── PRODUCTS ────────────────────────────────── */
+let products = {};
+
+onValue(ref(db,'products'), snap => {
+  products = snap.val() || {};
+  renderProducts();
+  renderStats();
+});
+
+function renderStats() {
+  const list = Object.values(products);
+  const total = list.length;
+  const inStock  = list.filter(p => p.stock > (p.low||10)).length;
+  const lowStock = list.filter(p => p.stock > 0 && p.stock <= (p.low||10)).length;
+  const outStock = list.filter(p => p.stock === 0).length;
+  document.getElementById('statTotal').textContent  = total;
+  document.getElementById('statIn').textContent     = inStock;
+  document.getElementById('statLow').textContent    = lowStock;
+  document.getElementById('statOut').textContent    = outStock;
+}
+
+function renderProducts() {
+  const q   = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const cat = document.getElementById('catFilter')?.value||'';
+  const sf  = document.getElementById('stockFilter')?.value||'';
+
+  const list = Object.entries(products).filter(([,p]) => {
+    if (q && !p.name?.toLowerCase().includes(q) && !p.sku?.toLowerCase().includes(q)) return false;
+    if (cat && p.cat !== cat) return false;
+    if (sf === 'low' && !(p.stock > 0 && p.stock <= (p.low||10))) return false;
+    if (sf === 'out' && p.stock !== 0) return false;
+    return true;
+  });
+
+  const maxStock = Math.max(...Object.values(products).map(p=>p.stock||0), 1);
+
+  document.getElementById('prodTbody').innerHTML = list.length === 0
+    ? `<tr><td colspan="6" style="text-align:center;padding:32px;color:#aaa;">ยังไม่มีสินค้า — กด "+ Add Product" เพื่อเพิ่ม</td></tr>`
+    : list.map(([id,p]) => {
+        const low = p.low||10;
+        const st  = p.stock===0 ? {l:'Out of Stock',c:'red'}
+                  : p.stock<=low ? {l:'Low Stock',c:'amber'}
+                  : {l:'In Stock',c:'green'};
+        const col = p.stock===0?'#e24b4a':p.stock<=low?'#ef9f27':'#63991a';
+        const fill= Math.round((p.stock/maxStock)*100);
+        return `<tr>
+          <td>
+            <div style="font-weight:500;font-size:12px;">${p.name||'—'}</div>
+            <div style="font-size:10px;color:#aaa;">${p.sku||''}</div>
+          </td>
+          <td style="font-size:12px;">${p.cat||'—'}</td>
+          <td style="font-weight:500;">฿${(p.price||0).toLocaleString()}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="height:4px;background:#eee;border-radius:2px;width:72px;overflow:hidden;">
+                <div style="height:100%;width:${fill}%;background:${col};border-radius:2px;"></div>
+              </div>
+              <span style="font-size:12px;">${p.stock||0}</span>
+            </div>
+          </td>
+          <td><span class="badge ${st.c}">${st.l}</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button class="btn sm" onclick="openEdit('${id}')"><i class="ti ti-edit"></i> Edit</button>
+              <button class="btn sm danger" onclick="deleteProd('${id}')"><i class="ti ti-trash"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+}
+
+window.deleteProd = id => {
+  if (!confirm('ลบสินค้านี้?')) return;
+  remove(ref(db,`products/${id}`)).then(()=>toast('ลบสินค้าแล้ว'));
+};
+
+window.openEdit = id => {
+  const p = products[id] || {};
+  document.getElementById('editId').value   = id;
+  document.getElementById('fName').value    = p.name||'';
+  document.getElementById('fSku').value     = p.sku||'';
+  document.getElementById('fCat').value     = p.cat||'Cap';
+  document.getElementById('fPrice').value   = p.price||'';
+  document.getElementById('fStock').value   = p.stock||'';
+  document.getElementById('fLow').value     = p.low||10;
+  document.getElementById('fDesc').value    = p.desc||'';
+  document.getElementById('modalTitle').textContent = 'Edit Product';
+  document.getElementById('modal').classList.add('open');
+};
+
+window.openAdd = () => {
+  ['editId','fName','fSku','fPrice','fStock','fDesc'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('fCat').value  = 'Cap';
+  document.getElementById('fLow').value  = '10';
+  document.getElementById('modalTitle').textContent = 'Add Product';
+  document.getElementById('modal').classList.add('open');
+};
+
+window.closeModal = () => document.getElementById('modal').classList.remove('open');
+
+window.saveProduct = () => {
+  const id  = document.getElementById('editId').value;
+  const obj = {
+    name:  document.getElementById('fName').value  || 'Unnamed',
+    sku:   document.getElementById('fSku').value   || '',
+    cat:   document.getElementById('fCat').value,
+    price: Number(document.getElementById('fPrice').value)||0,
+    stock: Number(document.getElementById('fStock').value)||0,
+    low:   Number(document.getElementById('fLow').value)||10,
+    desc:  document.getElementById('fDesc').value  || '',
+    updatedAt: Date.now()
+  };
+  const p = id ? update(ref(db,`products/${id}`),obj) : push(ref(db,'products'),{...obj,createdAt:Date.now()});
+  p.then(()=>{ toast(id?'อัปเดตแล้ว':'เพิ่มสินค้าแล้ว'); closeModal(); });
+};
+
+/* ─── ORDERS ──────────────────────────────────── */
+let orders = {};
+
+onValue(ref(db,'orders'), snap => {
+  orders = snap.val() || {};
+  renderOrders();
+  renderOrderStats();
+});
+
+function renderOrderStats() {
+  const list = Object.values(orders);
+  document.getElementById('oTotal').textContent   = list.length;
+  document.getElementById('oPending').textContent = list.filter(o=>o.status==='Pending').length;
+  document.getElementById('oShipped').textContent = list.filter(o=>o.status==='Shipped').length;
+  const rev = list.reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('oRevenue').textContent = '฿'+rev.toLocaleString();
+}
+
+function renderOrders(filter='') {
+  const list = Object.entries(orders).filter(([,o])=>!filter||o.status===filter);
+  list.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+
+  const stCls = {Pending:'amber',Processing:'blue',Shipped:'blue',Delivered:'green',Cancelled:'red'};
+
+  document.getElementById('orderTbody').innerHTML = list.length === 0
+    ? `<tr><td colspan="7" style="text-align:center;padding:32px;color:#aaa;">ยังไม่มีออเดอร์</td></tr>`
+    : list.map(([id,o]) => `<tr>
+        <td style="font-weight:500;font-size:12px;">${o.ref||id.slice(-6)}</td>
+        <td>
+          <div style="font-weight:500;">${o.name||'—'}</div>
+          <div style="font-size:10px;color:#aaa;">${o.email||''}</div>
+        </td>
+        <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.items||'—'}</td>
+        <td style="font-weight:500;">฿${(o.total||0).toLocaleString()}</td>
+        <td><span class="badge ${stCls[o.status]||'gray'}">${o.status||'—'}</span></td>
+        <td style="font-size:11px;color:#aaa;">${fmtDate(o.createdAt)}</td>
+        <td><button class="btn sm" onclick="openOrderPanel('${id}')">View</button></td>
+      </tr>`).join('');
+}
+
+window.filterOrders = v => renderOrders(v);
+
+window.openOrderPanel = id => {
+  const o = orders[id];
+  if (!o) return;
+  document.getElementById('panelOrderRef').textContent  = o.ref||id.slice(-6);
+  document.getElementById('panelCust').innerHTML        = `${o.name||'—'}<br><span style="color:#aaa;font-size:11px;">${o.email||''} · ${o.phone||''}</span>`;
+  document.getElementById('panelAddr').textContent      = o.address||'—';
+  document.getElementById('panelItems').textContent     = o.items||'—';
+  document.getElementById('panelPayment').textContent   = o.payment||'—';
+  document.getElementById('panelStatusSel').value       = o.status||'Pending';
+  document.getElementById('panelId').value              = id;
+  document.getElementById('orderPanel').classList.add('open');
+  document.getElementById('orderPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+
+window.updateOrderStatus = () => {
+  const id  = document.getElementById('panelId').value;
+  const val = document.getElementById('panelStatusSel').value;
+  update(ref(db,`orders/${id}`),{status:val, updatedAt:Date.now()})
+    .then(()=>{ toast('อัปเดตสถานะแล้ว → '+val); openOrderPanel(id); });
+};
+
+/* ─── expose filter/search to inline handlers ─── */
+window.renderProducts = renderProducts;
+window.renderOrders   = renderOrders;
+</script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5f3;}
+.layout{display:grid;grid-template-columns:210px 1fr;min-height:100vh;}
+
+/* sidebar */
+.sidebar{background:#fff;border-right:.5px solid #e8e8e8;padding:20px 0;display:flex;flex-direction:column;}
+.s-logo{padding:0 18px 18px;border-bottom:.5px solid #e8e8e8;margin-bottom:12px;}
+.s-logo-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;}
+.s-logo-sub{font-size:10px;color:#aaa;letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.nav-sec{font-size:10px;color:#bbb;letter-spacing:.12em;text-transform:uppercase;padding:12px 18px 4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;font-size:12px;cursor:pointer;color:#777;border-left:2px solid transparent;transition:all .15s;}
+.nav-item:hover{background:#f8f8f6;color:#111;}
+.nav-item.active{color:#111;border-left:2px solid #111;background:#f8f8f6;font-weight:500;}
+.nav-item i{font-size:15px;}
+.nav-badge{margin-left:auto;background:#e24b4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:99px;}
+
+/* main */
+.main{padding:24px 28px;overflow:auto;}
+.page{display:none;} .page.active{display:block;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.05em;}
+
+/* buttons */
+.btn{border:.5px solid #e0e0e0;background:#fff;padding:7px 14px;font-size:11px;letter-spacing:.05em;cursor:pointer;font-family:'DM Sans',sans-serif;color:#111;display:inline-flex;align-items:center;gap:5px;border-radius:6px;transition:background .15s;}
+.btn:hover{background:#f5f5f3;}
+.btn.primary{background:#111;color:#fff;border-color:#111;}
+.btn.primary:hover{background:#333;}
+.btn.sm{padding:5px 10px;font-size:10px;}
+.btn.danger{color:#c0392b;border-color:#ecc;} .btn.danger:hover{background:#fff5f5;}
+
+/* badges */
+.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:99px;font-weight:500;}
+.badge.green{background:#eaf3de;color:#3b6d11;}
+.badge.red{background:#fcebeb;color:#a32d2d;}
+.badge.amber{background:#faeeda;color:#854f0b;}
+.badge.blue{background:#e6f1fb;color:#185fa5;}
+.badge.gray{background:#f0f0ee;color:#777;}
+
+/* stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.stat{background:#fff;border-radius:8px;padding:14px 16px;border:.5px solid #e8e8e8;}
+.stat-lbl{font-size:10px;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1.1;margin-top:2px;}
+.stat-sub{font-size:11px;color:#aaa;margin-top:3px;}
+
+/* toolbar */
+.toolbar{display:flex;gap:8px;margin-bottom:14px;}
+.search-wrap{flex:1;position:relative;}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#bbb;font-size:15px;}
+.search-wrap input{width:100%;padding:8px 12px 8px 32px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
+select.flt{padding:8px 11px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
+
+/* table */
+.tbl{background:#fff;border:.5px solid #e8e8e8;border-radius:10px;overflow:hidden;margin-bottom:16px;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;padding:10px 14px;text-align:left;border-bottom:.5px solid #e8e8e8;background:#fafaf8;font-weight:500;}
+tbody tr{border-bottom:.5px solid #e8e8e8;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#fafaf8;}
+td{padding:11px 14px;font-size:12px;vertical-align:middle;}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:100;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:10px;width:440px;max-width:90vw;border:.5px solid #e0e0e0;box-shadow:0 8px 32px rgba(0,0,0,.12);}
+.modal-hdr{padding:18px 22px 14px;border-bottom:.5px solid #e8e8e8;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.05em;}
+.modal-body{padding:18px 22px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:8px 11px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
+.field textarea{resize:vertical;min-height:60px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-ftr{padding:14px 22px;border-top:.5px solid #e8e8e8;display:flex;justify-content:flex-end;gap:8px;}
+
+/* order panel */
+.order-panel{background:#fff;border:.5px solid #e8e8e8;border-radius:10px;padding:20px;margin-top:14px;display:none;}
+.order-panel.open{display:block;}
+.order-panel h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
+.info-blk{background:#fafaf8;border-radius:6px;padding:12px;}
+.info-blk .lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:6px;}
+.info-blk .val{font-size:12px;line-height:1.7;}
+
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:10px 18px;font-size:12px;border-radius:6px;display:none;z-index:999;animation:fu .2s ease;}
+@keyframes fu{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* loading */
+.loading{display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:13px;gap:8px;}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="s-logo">
+      <div class="s-logo-name">ZERO ONE</div>
+      <div class="s-logo-sub">Admin Panel</div>
+    </div>
+    <div class="nav-sec">Store</div>
+    <div class="nav-item active" id="nav-orders" onclick="showPage('orders')">
+      <i class="ti ti-shopping-bag"></i> Orders
+      <span class="nav-badge" id="pendingBadge">0</span>
+    </div>
+    <div class="nav-item" id="nav-products" onclick="showPage('products')">
+      <i class="ti ti-box"></i> Products
+    </div>
+    <div class="nav-sec">System</div>
+    <div class="nav-item" onclick="window.open('https://console.firebase.google.com/project/zeroone-shop/database/zeroone-shop-default-rtdb/data','_blank')">
+      <i class="ti ti-database"></i> Firebase Console
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ORDERS PAGE -->
+    <div class="page active" id="page-orders">
+      <div class="page-header">
+        <div class="page-title">Orders</div>
+        <select class="flt" onchange="filterOrders(this.value)">
+          <option value="">All Status</option>
+          <option>Pending</option><option>Processing</option>
+          <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+        </select>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Total Orders</div><div class="stat-val" id="oTotal">—</div></div>
+        <div class="stat"><div class="stat-lbl">Pending</div><div class="stat-val" style="color:#ef9f27;" id="oPending">—</div><div class="stat-sub"><span class="badge amber">รอดำเนินการ</span></div></div>
+        <div class="stat"><div class="stat-lbl">Shipped</div><div class="stat-val" id="oShipped">—</div><div class="stat-sub"><span class="badge blue">กำลังจัดส่ง</span></div></div>
+        <div class="stat"><div class="stat-lbl">Revenue</div><div class="stat-val" id="oRevenue">—</div></div>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr>
+            <th>Order Ref</th><th>Customer</th><th>Items</th>
+            <th>Total</th><th>Status</th><th>Date</th><th></th>
+          </tr></thead>
+          <tbody id="orderTbody">
+            <tr><td colspan="7" class="loading"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> กำลังโหลดจาก Firebase…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Order detail panel -->
+      <div class="order-panel" id="orderPanel">
+        <input type="hidden" id="panelId">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3>Order <span id="panelOrderRef"></span></h3>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="panelStatusSel" class="flt">
+              <option>Pending</option><option>Processing</option>
+              <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+            <button class="btn primary sm" onclick="updateOrderStatus()">Update</button>
+            <button class="btn sm" onclick="document.getElementById('orderPanel').classList.remove('open')"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-blk"><div class="lbl">Customer</div><div class="val" id="panelCust"></div></div>
+          <div class="info-blk"><div class="lbl">Shipping Address</div><div class="val" id="panelAddr"></div></div>
+          <div class="info-blk"><div class="lbl">Payment</div><div class="val" id="panelPayment"></div></div>
+        </div>
+        <div class="info-blk"><div class="lbl">Items</div><div class="val" id="panelItems"></div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS PAGE -->
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <div class="page-title">Products & Stock</div>
+        <button class="btn primary" onclick="openAdd()"><i class="ti ti-plus"></i> Add Product</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Total SKUs</div><div class="stat-val" id="statTotal">—</div></div>
+        <div class="stat"><div class="stat-lbl">In Stock</div><div class="stat-val" id="statIn">—</div><div class="stat-sub"><span class="badge green">Good</span></div></div>
+        <div class="stat"><div class="stat-lbl">Low Stock</div><div class="stat-val" id="statLow">—</div><div class="stat-sub"><span class="badge amber">Restock needed</span></div></div>
+        <div class="stat"><div class="stat-lbl">Out of Stock</div><div class="stat-val" id="statOut">—</div><div class="stat-sub"><span class="badge red">Action needed</span></div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" id="searchInput" placeholder="Search products…" oninput="renderProducts()">
+        </div>
+        <select class="flt" id="catFilter" onchange="renderProducts()">
+          <option value="">All Categories</option>
+          <option>Cap</option><option>Sock</option><option>Tape</option><option>Apparel</option>
+        </select>
+        <select class="flt" id="stockFilter" onchange="renderProducts()">
+          <option value="">All Stock</option>
+          <option value="low">Low Stock</option>
+          <option value="out">Out of Stock</option>
+        </select>
+      </div>
+
+      <div class="tbl">
+        <table>
+          <thead><tr>
+            <th>Product</th><th>Category</th><th>Price</th>
+            <th>Stock</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="prodTbody">
+            <tr><td colspan="6" class="loading"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> กำลังโหลดจาก Firebase…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- .main -->
+</div><!-- .layout -->
+
+<!-- Product Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">Add Product</div>
+      <button class="btn sm" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="field"><label>Product Name</label><input type="text" id="fName" placeholder="e.g. Trucker Cap — Z1 Black"></div>
+      <div class="field-row">
+        <div class="field"><label>SKU</label><input type="text" id="fSku" placeholder="Z1-CAP-001"></div>
+        <div class="field"><label>Category</label>
+          <select id="fCat"><option>Cap</option><option>Sock</option><option>Tape</option><option>Apparel</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Price (฿)</label><input type="number" id="fPrice" placeholder="890"></div>
+        <div class="field"><label>Stock Qty</label><input type="number" id="fStock" placeholder="50"></div>
+      </div>
+      <div class="field"><label>Low Stock Alert at</label><input type="number" id="fLow" placeholder="10"></div>
+      <div class="field"><label>Description</label><textarea id="fDesc" placeholder="รายละเอียดสินค้า…"></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="saveProduct()"><i class="ti ti-device-floppy"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<script>
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const n = document.getElementById('nav-'+p);
+  if (n) n.classList.add('active');
+}
+
+// Update pending badge on sidebar whenever orders change
+const origRenderOrderStats = window.renderOrderStats;
+setInterval(() => {
+  const badge = document.getElementById('pendingBadge');
+  if (!badge) return;
+  const count = document.querySelectorAll('#orderTbody .badge.amber').length;
+  badge.textContent = count;
+  badge.style.display = count ? 'inline' : 'none';
+}, 1000);
+</script>
+</body>
+</html>
