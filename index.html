@@ -8,6 +8,349 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<!-- ═══ FIREBASE SDK ═══ -->
+<script type="module">
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, update, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCrkIyAjDK5uHBZaokwAEcxDgjGolxDSCc",
+  authDomain: "zeroone-shop.firebaseapp.com",
+  databaseURL: "https://zeroone-shop-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "zeroone-shop",
+  storageBucket: "zeroone-shop.firebasestorage.app",
+  messagingSenderId: "142840215835",
+  appId: "1:142840215835:web:de662d87798ea25ffb7bbe"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+/* ── SVG placeholders (ใช้จนกว่าจะมีรูปจริง) ── */
+const svgs = {
+  Cap:`<svg width="130" height="100" viewBox="0 0 130 100"><ellipse cx="65" cy="86" rx="54" ry="6" fill="#ddd"/><path d="M14,72 Q14,16 65,16 Q116,16 116,72 Z" fill="#1a1a1a"/><path d="M14,72 L116,72 L122,80 L8,80 Z" fill="#0d0d0d"/><rect x="8" y="80" width="114" height="5" rx="2.5" fill="#333"/><text x="65" y="52" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold" letter-spacing="2">ZERO ONE</text></svg>`,
+  Sock:`<svg width="100" height="130" viewBox="0 0 100 130"><path d="M35,6 L35,80 Q35,106 58,106 Q81,106 81,80 L81,74 L67,74 L67,80 Q67,90 58,90 Q49,90 49,80 L49,6 Z" fill="#e0e0de" stroke="#ccc" stroke-width="1"/><line x1="35" y1="22" x2="49" y2="22" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="36" x2="49" y2="36" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="50" x2="49" y2="50" stroke="#bbb" stroke-width="1.5"/><text x="58" y="98" text-anchor="middle" fill="#aaa" font-size="6" font-family="sans-serif" letter-spacing="1.5">ZERO ONE</text></svg>`,
+  Tape:`<svg width="160" height="100" viewBox="0 0 160 100"><rect x="6" y="12" width="50" height="68" rx="4" fill="#c9a87a" stroke="#b89060" stroke-width="1"/><rect x="12" y="18" width="38" height="56" rx="2" fill="#d8b98e"/><text x="31" y="49" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ZERO</text><text x="31" y="60" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ONE</text><path d="M58,46 Q80,26 138,34 L138,41 Q82,34 64,54 Z" fill="#111"/><path d="M58,52 Q80,34 136,42 L136,49 Q80,42 64,60 Z" fill="#111"/><path d="M58,58 Q80,42 134,50 L134,57 Q80,50 64,66 Z" fill="#111"/></svg>`,
+  Apparel:`<svg width="120" height="120" viewBox="0 0 120 120"><path d="M30,20 L10,40 L25,45 L25,100 L95,100 L95,45 L110,40 L90,20 L70,30 Q60,35 50,30 Z" fill="#1a1a1a"/><text x="60" y="68" text-anchor="middle" fill="#fff" font-size="8" font-family="sans-serif" font-weight="bold" letter-spacing="1.5">ZERO ONE</text></svg>`
+};
+
+/* ── state ── */
+let fbProducts  = {};   // { firebaseKey: productObj }
+let cart        = [];
+let currentFbKey= null;
+let currentProduct = null;
+let currentQty  = 1;
+let currentVariant = 0;
+
+/* ══════════════════════════════════════
+   PRODUCTS — อ่านจาก Firebase real-time
+   ══════════════════════════════════════ */
+onValue(ref(db,'products'), snap => {
+  fbProducts = snap.val() || {};
+
+  // ถ้ายังไม่มีสินค้าใน Firebase เลย ให้ seed ข้อมูลตัวอย่างก่อน
+  if (Object.keys(fbProducts).length === 0) {
+    seedProducts();
+  } else {
+    window._renderProducts();
+  }
+});
+
+function seedProducts() {
+  const seeds = [
+    {name:'Trucker Cap Z1 Black',cat:'Cap',sku:'Z1-CAP-001',price:890,compare:990,stock:42,low:10,badge:'New',
+     desc:'Classic trucker cap with bold ZERO ONE branding. Mesh back for breathability — perfect for long run days or casual wear.',
+     variants:'Black / One Size,White / One Size,Navy / One Size', variantStock:'42,7,0'},
+    {name:'Run Sock Performance',cat:'Sock',sku:'Z1-SOC-001',price:390,compare:0,stock:120,low:20,badge:'',
+     desc:'High-performance running sock with arch support, moisture-wicking fabric, and cushioned sole.',
+     variants:'White / S-M,White / L-XL,Black / S-M,Black / L-XL', variantStock:'60,60,55,45'},
+    {name:'Enduro Tape Black',cat:'Tape',sku:'Z1-TAP-001',price:590,compare:0,stock:55,low:15,badge:'Best Seller',
+     desc:'Kinesiology tape engineered for endurance athletes. Extra-strong adhesive, flexible support, water-resistant.',
+     variants:'Black 5m,White 5m', variantStock:'55,3'},
+    {name:'Trucker Cap Z1 White',cat:'Cap',sku:'Z1-CAP-002',price:890,compare:0,stock:7,low:10,badge:'',
+     desc:'Clean white version of the Z1 Trucker Cap. Lightweight mesh construction with adjustable snapback fit.',
+     variants:'White / One Size', variantStock:'7'},
+    {name:'Run Sock Compression',cat:'Sock',sku:'Z1-SOC-002',price:490,compare:0,stock:30,low:10,badge:'',
+     desc:'Compression running sock for recovery and long-distance performance.',
+     variants:'White / S-M,White / L-XL', variantStock:'15,15'},
+  ];
+  const promises = seeds.map(s => push(ref(db,'products'), {...s, createdAt: Date.now()}));
+  Promise.all(promises).then(() => showToast('Loaded products from Firebase ✓'));
+}
+
+/* ── แปลง Firebase product format → ใช้งานใน UI ── */
+function toProduct(fbKey, p) {
+  return {
+    fbKey,
+    name: p.name || 'Unnamed',
+    cat:  p.cat  || 'Cap',
+    sku:  p.sku  || '',
+    price: p.price || 0,
+    compare: p.compare || 0,
+    stock: p.stock || 0,
+    low:  p.low  || 10,
+    badge: p.badge || '',
+    desc: p.desc || '',
+    variants:     (p.variants     || '').split(',').map(v=>v.trim()).filter(Boolean),
+    variantStock: (p.variantStock || '').split(',').map(Number),
+  };
+}
+
+/* expose ให้ HTML เรียกได้ */
+window._renderProducts = function() {
+  const grid = document.getElementById('prodGrid');
+  if (!grid) return;
+  const list = Object.entries(fbProducts)
+    .filter(([,p]) => p.stock > 0)   // ซ่อนสินค้า out-of-stock จากหน้าร้าน
+    .map(([k,p]) => toProduct(k,p));
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:#aaa;">กำลังโหลดสินค้า…</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(p => `
+    <div class="prod-card" onclick="openProduct('${p.fbKey}')">
+      ${p.badge ? `<div class="prod-badge">${p.badge}</div>` : ''}
+      <div class="prod-img-wrap">${svgs[p.cat] || svgs['Cap']}</div>
+      <div class="prod-info">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-price">฿${p.price.toLocaleString()}</div>
+      </div>
+    </div>`).join('');
+};
+
+/* ══════════════════════════════════════
+   PRODUCT DETAIL
+   ══════════════════════════════════════ */
+window.openProduct = function(fbKey) {
+  const raw = fbProducts[fbKey];
+  if (!raw) return;
+  currentFbKey = fbKey;
+  currentProduct = toProduct(fbKey, raw);
+  currentQty = 1; currentVariant = 0;
+
+  document.getElementById('detailImg').innerHTML  = svgs[currentProduct.cat] || svgs['Cap'];
+  document.getElementById('detailCat').textContent  = currentProduct.cat;
+  document.getElementById('detailName').textContent = currentProduct.name;
+  document.getElementById('detailPrice').textContent= '฿' + currentProduct.price.toLocaleString();
+  const comp = document.getElementById('detailCompare');
+  comp.textContent   = currentProduct.compare ? '฿' + currentProduct.compare.toLocaleString() : '';
+  comp.style.display = currentProduct.compare ? 'block' : 'none';
+  document.getElementById('detailDesc').textContent    = currentProduct.desc;
+  document.getElementById('detailSku').textContent     = currentProduct.sku;
+  document.getElementById('detailCatMeta').textContent = currentProduct.cat;
+  document.getElementById('qtyNum').textContent = '1';
+  renderVariants();
+  showPage('detail');
+};
+
+function renderVariants() {
+  document.getElementById('variantOpts').innerHTML = currentProduct.variants.map((v, i) => {
+    const out = (currentProduct.variantStock[i] || 0) === 0;
+    return `<button class="variant-btn ${i===currentVariant?'selected':''} ${out?'out':''}"
+      ${out ? 'disabled' : `onclick="selectVariant(${i})"`}>
+      ${v}${out ? ' · sold out' : ''}</button>`;
+  }).join('');
+}
+
+window.selectVariant = function(i) { currentVariant = i; renderVariants(); };
+window.changeQty = function(d) {
+  currentQty = Math.max(1, currentQty + d);
+  document.getElementById('qtyNum').textContent = currentQty;
+};
+
+/* ══════════════════════════════════════
+   CART
+   ══════════════════════════════════════ */
+window.addToCart = function() {
+  if (!currentProduct) return;
+  const variant = currentProduct.variants[currentVariant] || 'One Size';
+  const key = currentFbKey + '-' + currentVariant;
+  const ex  = cart.find(c => c.key === key);
+  if (ex) ex.qty += currentQty;
+  else cart.push({
+    key, fbKey: currentFbKey,
+    variantIdx: currentVariant,
+    name: currentProduct.name,
+    cat:  currentProduct.cat,
+    variant, price: currentProduct.price, qty: currentQty
+  });
+  updateCartCount();
+  showToast('Added to cart ✓');
+};
+
+function updateCartCount() {
+  document.getElementById('cartCount').textContent = cart.reduce((s,c)=>s+c.qty,0);
+}
+
+window.renderCart = function() {
+  const el = document.getElementById('cartItems');
+  if (!cart.length) {
+    el.innerHTML = '<div class="empty-cart"><i class="ti ti-shopping-bag"></i><div>Your cart is empty</div><div style="font-size:12px;color:#bbb;margin-top:4px;">Go pick something good</div></div>';
+    document.getElementById('cartSummary').innerHTML = '<a class="continue-link" onclick="showPage(\'home\')">← Continue Shopping</a>';
+    return;
+  }
+  el.innerHTML = cart.map(c => `
+    <div class="cart-item">
+      <div class="cart-thumb">
+        <div style="transform:scale(0.36);transform-origin:center;width:180%;height:180%;display:flex;align-items:center;justify-content:center;">
+          ${svgs[c.cat] || ''}
+        </div>
+      </div>
+      <div>
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-variant">${c.variant}</div>
+        <div class="cart-item-price">฿${c.price.toLocaleString()} × ${c.qty}</div>
+      </div>
+      <div class="cart-item-right">
+        <span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span>
+        <span class="cart-remove" onclick="removeFromCart('${c.key}')">Remove</span>
+      </div>
+    </div>`).join('');
+
+  const sub  = cart.reduce((s,c) => s + c.price*c.qty, 0);
+  const ship = sub >= 1500 ? 0 : 60;
+  document.getElementById('cartSummary').innerHTML = `
+    <div class="cart-summary">
+      <div class="summary-row"><span style="color:#777;">Subtotal</span><span>฿${sub.toLocaleString()}</span></div>
+      <div class="summary-row"><span style="color:#777;">Shipping</span>
+        <span>${ship===0 ? '<span style="color:#3b6d11;font-weight:500;">Free</span>' : '฿'+ship}</span>
+      </div>
+      ${sub < 1500 ? `<div style="font-size:11px;color:#888;margin-top:-2px;">สั่งเพิ่มอีก ฿${(1500-sub).toLocaleString()} รับส่งฟรี</div>` : ''}
+      <div class="summary-row total"><span>Total</span><span>฿${(sub+ship).toLocaleString()}</span></div>
+    </div>
+    <button class="checkout-btn" onclick="goCheckout()">Proceed to Checkout →</button>
+    <a class="continue-link" onclick="showPage('home')">← Continue Shopping</a>`;
+};
+
+window.removeFromCart = function(key) {
+  cart = cart.filter(c => c.key !== key);
+  updateCartCount();
+  window.renderCart();
+};
+
+/* ══════════════════════════════════════
+   CHECKOUT
+   ══════════════════════════════════════ */
+window.goCheckout = function() {
+  const sub  = cart.reduce((s,c) => s+c.price*c.qty, 0);
+  const ship = sub >= 1500 ? 0 : 60;
+  document.getElementById('checkoutLines').innerHTML = cart.map(c=>`
+    <div class="order-line">
+      <span>${c.name} × ${c.qty}<br>
+        <span style="color:#aaa;font-size:11px;">${c.variant}</span>
+      </span>
+      <span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span>
+    </div>`).join('');
+  document.getElementById('cSubtotal').textContent = '฿' + sub.toLocaleString();
+  document.getElementById('cShipping').textContent = ship === 0 ? 'Free' : '฿' + ship;
+  document.getElementById('cTotal').textContent    = '฿' + (sub+ship).toLocaleString();
+  showPage('checkout');
+};
+
+window.selectPay = function(el) {
+  document.querySelectorAll('.pay-opt').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+};
+
+/* ══════════════════════════════════════
+   PLACE ORDER → บันทึกลง Firebase + หัก stock
+   ══════════════════════════════════════ */
+window.placeOrder = async function() {
+  const name  = document.getElementById('cfName').value.trim();
+  const email = document.getElementById('cfEmail').value.trim();
+  const phone = document.getElementById('cfPhone').value.trim();
+  const addr  = [
+    document.getElementById('cfAddr').value.trim(),
+    document.getElementById('cfCity').value.trim(),
+    document.getElementById('cfZip').value.trim(),
+    document.getElementById('cfProv').value
+  ].filter(Boolean).join(', ');
+  const payment = document.querySelector('.pay-opt.selected')?.textContent?.trim() || 'PromptPay';
+
+  if (!name)  { showToast('กรุณากรอกชื่อ'); return; }
+  if (!email) { showToast('กรุณากรอกอีเมล'); return; }
+
+  const sub   = cart.reduce((s,c) => s+c.price*c.qty, 0);
+  const ship  = sub >= 1500 ? 0 : 60;
+  const total = sub + ship;
+  const orderRef = 'Z1-' + Date.now().toString().slice(-6);
+
+  /* 1 — บันทึก order ลง Firebase */
+  const orderData = {
+    ref: orderRef,
+    name, email, phone,
+    address: addr,
+    payment,
+    items: cart.map(c => `${c.name} (${c.variant}) ×${c.qty}`).join(', '),
+    itemsDetail: cart.map(c => ({fbKey:c.fbKey, name:c.name, variant:c.variant, qty:c.qty, price:c.price})),
+    subtotal: sub, shipping: ship, total,
+    status: 'Pending',
+    createdAt: Date.now()
+  };
+
+  try {
+    await push(ref(db, 'orders'), orderData);
+
+    /* 2 — หัก stock แต่ละสินค้า */
+    const stockUpdates = {};
+    for (const item of cart) {
+      const snap = await get(ref(db, `products/${item.fbKey}`));
+      if (!snap.exists()) continue;
+      const p = snap.val();
+
+      // หัก variantStock
+      const varStocks = (p.variantStock || '').split(',').map(Number);
+      varStocks[item.variantIdx] = Math.max(0, (varStocks[item.variantIdx] || 0) - item.qty);
+      const newVariantStock = varStocks.join(',');
+
+      // หัก stock รวม
+      const newStock = Math.max(0, (p.stock || 0) - item.qty);
+
+      // badge อัตโนมัติ
+      const low = p.low || 10;
+      const newBadge = newStock === 0 ? '' : newStock <= low ? 'Low Stock' : (p.badge === 'Low Stock' ? '' : p.badge || '');
+
+      stockUpdates[`products/${item.fbKey}/stock`]        = newStock;
+      stockUpdates[`products/${item.fbKey}/variantStock`] = newVariantStock;
+      stockUpdates[`products/${item.fbKey}/badge`]        = newBadge;
+    }
+    await update(ref(db), stockUpdates);
+
+    /* 3 — success */
+    document.getElementById('orderRef').textContent = orderRef;
+    cart = [];
+    updateCartCount();
+    showPage('success');
+
+  } catch (err) {
+    console.error(err);
+    showToast('เกิดข้อผิดพลาด กรุณาลองใหม่');
+  }
+};
+
+/* ══════════════════════════════════════
+   UTILS
+   ══════════════════════════════════════ */
+window.showPage = function(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if (p === 'cart') window.renderCart();
+  if (p === 'home') window._renderProducts();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 2200);
+}
+</script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;}
@@ -59,7 +402,6 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 .feat-card.light{background:#eeebe5;color:#111;}
 .feat-title{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:0.92;letter-spacing:0.02em;}
 .feat-desc{font-size:12px;color:#888;line-height:1.8;max-width:240px;margin-top:10px;}
-.feat-card.light .feat-desc{color:#888;}
 .feat-cta{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:20px;border-bottom:1px solid currentColor;padding-bottom:3px;width:fit-content;}
 
 /* BRAND STRIP */
@@ -72,7 +414,7 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 .footer{padding:28px 40px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #e8e8e8;}
 .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.2em;}
 .footer-links{display:flex;gap:20px;}
-.footer-links a{font-size:11px;color:#aaa;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;}
+.footer-links a{font-size:11px;color:#aaa;text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;}
 .footer-copy{font-size:11px;color:#ccc;}
 
 /* PRODUCT DETAIL */
@@ -145,14 +487,13 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 
 /* SUCCESS */
 .success-wrap{max-width:480px;margin:60px auto;text-align:center;padding:0 40px;}
-.success-icon{width:56px;height:56px;background:#eaf3de;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;}
+.success-icon{width:56px;height:56px;background:#eaf3de;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
 .success-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:0.05em;margin-bottom:8px;}
 .success-sub{font-size:13px;color:#777;line-height:1.8;margin-bottom:24px;}
 .order-ref{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;background:#f4f4f2;padding:12px 24px;display:inline-block;margin-bottom:24px;}
 
 /* TOAST */
-.toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:10px 18px;font-size:12px;border-radius:4px;display:none;z-index:999;animation:fadeup 0.2s ease;}
-@keyframes fadeup{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:10px 18px;font-size:12px;border-radius:4px;display:none;z-index:999;}
 
 /* RESPONSIVE */
 @media(max-width:768px){
@@ -182,15 +523,6 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
   </ul>
   <div class="logo" onclick="showPage('home')">
     <img src="logo.png" alt="ZERO ONE" style="width:40px;height:40px;object-fit:contain;">
-      <defs><clipPath id="cs"><rect x="4" y="4" width="92" height="92" rx="18"/></clipPath></defs>
-      <polygon points="4,22 4,4 62,4 28,38" fill="#111" clip-path="url(#cs)"/>
-      <polygon points="30,10 96,10 96,44 34,44 34,30" fill="#111" clip-path="url(#cs)"/>
-      <polygon points="66,10 96,10 96,44 82,44 66,27" fill="#fff" clip-path="url(#cs)"/>
-      <polygon points="82,10 96,22 82,44 66,27" fill="#111" clip-path="url(#cs)"/>
-      <polygon points="4,56 34,56 34,96 4,82" fill="#111" clip-path="url(#cs)"/>
-      <polygon points="18,56 34,56 34,72 18,72" fill="#fff" clip-path="url(#cs)"/>
-      <polygon points="38,60 96,60 96,96 74,96" fill="#111" clip-path="url(#cs)"/>
-    </svg>
     ZERO ONE
   </div>
   <div class="nav-right">
@@ -205,8 +537,10 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 <div class="page active" id="page-home">
   <div class="ticker">
     <div class="ticker-inner">
-      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span><span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
-      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span><span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
+      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span>
+      <span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
+      <span>ZERO ONE</span><span>·</span><span>NEW COLLECTION 2026</span><span>·</span>
+      <span>FREE SHIPPING OVER ฿1500</span><span>·</span><span>BUILT FOR RUNNERS</span><span>·</span>
     </div>
   </div>
   <div class="hero">
@@ -217,24 +551,20 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
     </div>
   </div>
   <div class="products" id="shopSection">
-    <div class="sec-header">
-      <div class="sec-title">New Arrivals</div>
+    <div class="sec-header"><div class="sec-title">New Arrivals</div></div>
+    <div class="prod-grid" id="prodGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:48px;color:#aaa;">กำลังโหลดสินค้า…</div>
     </div>
-    <div class="prod-grid" id="prodGrid"></div>
   </div>
   <div class="featured">
-    <div class="feat-card" onclick="showPage('home')">
-      <div>
-        <div class="feat-title">APPAREL<br>DROP 01</div>
-        <p class="feat-desc">Lightweight, breathable, designed for the long run. Built for pace, made to last.</p>
-      </div>
+    <div class="feat-card">
+      <div><div class="feat-title">APPAREL<br>DROP 01</div>
+        <p class="feat-desc">Lightweight, breathable, designed for the long run.</p></div>
       <div class="feat-cta">Explore Collection →</div>
     </div>
-    <div class="feat-card light" onclick="showPage('home')">
-      <div>
-        <div class="feat-title">RUN<br>READY<br>GEAR</div>
-        <p class="feat-desc">Everything from start line to finish. Caps, socks, tape — all in one place.</p>
-      </div>
+    <div class="feat-card light">
+      <div><div class="feat-title">RUN<br>READY<br>GEAR</div>
+        <p class="feat-desc">Everything from start to finish. Caps, socks, tape.</p></div>
       <div class="feat-cta">Shop Accessories →</div>
     </div>
   </div>
@@ -296,7 +626,9 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 <div class="page" id="page-checkout">
   <div class="checkout-wrap">
     <div class="checkout-form">
-      <div class="back-link" onclick="showPage('cart')" style="margin-bottom:16px;display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#aaa;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;"><i class="ti ti-arrow-left"></i> Back to Cart</div>
+      <div class="back-link" onclick="showPage('cart')" style="margin-bottom:16px;">
+        <i class="ti ti-arrow-left"></i> Back to Cart
+      </div>
       <div class="checkout-title">Checkout</div>
       <div class="form-section">
         <h4>Contact Info</h4>
@@ -308,7 +640,7 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
       </div>
       <div class="form-section">
         <h4>Shipping Address</h4>
-        <div class="form-field"><label>Address</label><input type="text" id="cfAddr" placeholder="123 Sukhumvit Rd, Apt 4"></div>
+        <div class="form-field"><label>Address</label><input type="text" id="cfAddr" placeholder="123 Sukhumvit Rd"></div>
         <div class="form-row">
           <div class="form-field"><label>City / District</label><input type="text" id="cfCity" placeholder="Khlong Toei"></div>
           <div class="form-field"><label>Postcode</label><input type="text" id="cfZip" placeholder="10110"></div>
@@ -348,8 +680,8 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
   <div class="success-wrap">
     <div class="success-icon"><i class="ti ti-check" style="color:#3b6d11;font-size:22px;"></i></div>
     <div class="success-title">Order Placed!</div>
-    <p class="success-sub">ຂອບໃຈທີ່ສັ່ງຊື້ກັບ ZERO ONE<br>ເຮົາຈະແຈ້ງການຈັດສົ່ງທາງ Email ທີ່ທ່ານລົງທະບຽນໄວ້ ພາຍໃນ 24 ຊົ່ວໂມງ</p>
-    <div class="order-ref" id="orderRef">Z1-0025</div><br>
+    <p class="success-sub">ขอบคุณที่สั่งซื้อกับ ZERO ONE<br>เราจะแจ้งการจัดส่งทางอีเมลภายใน 24 ชั่วโมง</p>
+    <div class="order-ref" id="orderRef"></div><br>
     <button class="shop-btn" onclick="showPage('home')" style="margin-top:12px;">← Continue Shopping</button>
   </div>
 </div>
@@ -360,180 +692,20 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
     <div class="back-link" onclick="showPage('home')"><i class="ti ti-arrow-left"></i> Back</div>
     <h1 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:0.05em;margin-bottom:32px;">Policy & Shipping</h1>
     <div style="margin-bottom:28px;">
-      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Shipping</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">ສັ່ງຊື້ກ່ອນ 14:00 . ຈັດສົ່ງມື້ດຽວກັນ (ມື້ປົກກະຕິ) · ນະຄອນຫຼວງ 1–2 ມື້ ຄ່າສົ່ງ ฿50 · ແຂວງອື່ນ 2–4 ວັນ ຄ່າສົ່ງ ฿60–70 · <strong>ຟີຄ່າສົ່ງເມື່ອສັ່ງຄົບ ฿1,500</strong></p>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Shipping</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">สั่งซื้อก่อน 14:00 น. จัดส่งวันเดียวกัน · กรุงเทพฯ 1–2 วัน ค่าส่ง ฿50 · ต่างจังหวัด 2–4 วัน ค่าส่ง ฿60–70 · <strong>ฟรีค่าส่งเมื่อสั่งครบ ฿1,500</strong></p>
     </div>
     <div style="margin-bottom:28px;">
-      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Return Policy</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">ຮັບຄືນສິນຄ້າພາຍໃນ 7 ວັນຫຼັງໄດ້ຮັບ · ສິນຄ້າຕ້ອງຢູ່ໃນສະພາບເດີມ ບໍ່ຜ່ານການໃຊ້ງານ ພ້ອມປ້າຍແລະບັນຈຸພັນຄົບ · ສິນຄ້າ Sale ບໍ່ຮັບຄືນ · ລູກຄ້າເປັນຜູ້ຮັບຜິດຊອບຄ່າຈັດສົ່ງຄືນ</p>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Return Policy</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">รับคืนภายใน 7 วันหลังได้รับ · สินค้าต้องไม่ผ่านการใช้งาน พร้อมป้ายและบรรจุภัณฑ์ครบ · สินค้า Sale ไม่รับคืน</p>
     </div>
     <div style="margin-bottom:28px;">
-      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.05em;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Contact</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;">📧 hello@zeroone.co.th · 📱 Instagram: @zeroonethai · ⏰ ຕອບກັບພາຍໃນ 24 ຊົ່ວໂມງ (ມື້ທຳການ)</p>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #eee;">Contact</h2>
+      <p style="font-size:13px;color:#555;line-height:1.9;">📧 hello@zeroone.co.th · 📱 Instagram: @zeroonethai · ⏰ ตอบกลับภายใน 24 ชั่วโมง</p>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<script>
-const products = [
-  {id:1,name:'Trucker Cap Z1 Black',cat:'Cap',sku:'Z1-CAP-001',price:890,compare:990,stock:42,badge:'New',
-   desc:'Classic trucker cap with bold ZERO ONE branding. Mesh back for breathability — perfect for long run days or casual wear. Adjustable snapback closure fits all sizes.',
-   variants:['Black / One Size','White / One Size','Navy / One Size'],variantStock:[42,7,0]},
-  {id:2,name:'Run Sock Performance',cat:'Sock',sku:'Z1-SOC-001',price:390,compare:0,stock:120,badge:'',
-   desc:'High-performance running sock with arch support, moisture-wicking fabric, and cushioned sole. Built to go the distance in comfort and style.',
-   variants:['White / S-M','White / L-XL','Black / S-M','Black / L-XL'],variantStock:[60,60,55,45]},
-  {id:3,name:'Enduro Tape Black',cat:'Tape',sku:'Z1-TAP-001',price:590,compare:0,stock:55,badge:'Best Seller',
-   desc:'Kinesiology tape engineered for endurance athletes. Extra-strong adhesive, flexible support, water-resistant. 5m per roll.',
-   variants:['Black 5m','White 5m'],variantStock:[55,3]},
-  {id:4,name:'Trucker Cap Z1 White',cat:'Cap',sku:'Z1-CAP-002',price:890,compare:0,stock:7,badge:'',
-   desc:'Clean white version of the Z1 Trucker Cap. Lightweight mesh construction with adjustable snapback fit.',
-   variants:['White / One Size'],variantStock:[7]},
-  {id:5,name:'Run Sock Compression',cat:'Sock',sku:'Z1-SOC-002',price:490,compare:0,stock:30,badge:'',
-   desc:'Compression running sock for recovery and long-distance performance. Graduated compression from ankle to calf.',
-   variants:['White / S-M','White / L-XL'],variantStock:[15,15]},
-  {id:6,name:'Enduro Tape White',cat:'Tape',sku:'Z1-TAP-002',price:590,compare:0,stock:3,badge:'Low Stock',
-   desc:'White version of our Enduro Tape. Same high-adhesion formula in a clean white colorway.',
-   variants:['White 5m'],variantStock:[3]},
-];
-
-const svgs = {
-  Cap:`<svg width="130" height="100" viewBox="0 0 130 100"><ellipse cx="65" cy="86" rx="54" ry="6" fill="#ddd"/><path d="M14,72 Q14,16 65,16 Q116,16 116,72 Z" fill="#1a1a1a"/><path d="M14,72 L116,72 L122,80 L8,80 Z" fill="#0d0d0d"/><rect x="8" y="80" width="114" height="5" rx="2.5" fill="#333"/><text x="65" y="52" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif" font-weight="bold" letter-spacing="2">ZERO ONE</text></svg>`,
-  Sock:`<svg width="100" height="130" viewBox="0 0 100 130"><path d="M35,6 L35,80 Q35,106 58,106 Q81,106 81,80 L81,74 L67,74 L67,80 Q67,90 58,90 Q49,90 49,80 L49,6 Z" fill="#e0e0de" stroke="#ccc" stroke-width="1"/><line x1="35" y1="22" x2="49" y2="22" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="36" x2="49" y2="36" stroke="#bbb" stroke-width="1.5"/><line x1="35" y1="50" x2="49" y2="50" stroke="#bbb" stroke-width="1.5"/><text x="58" y="98" text-anchor="middle" fill="#aaa" font-size="6" font-family="sans-serif" letter-spacing="1.5">ZERO ONE</text></svg>`,
-  Tape:`<svg width="160" height="100" viewBox="0 0 160 100"><rect x="6" y="12" width="50" height="68" rx="4" fill="#c9a87a" stroke="#b89060" stroke-width="1"/><rect x="12" y="18" width="38" height="56" rx="2" fill="#d8b98e"/><text x="31" y="49" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ZERO</text><text x="31" y="60" text-anchor="middle" fill="#6b4a2a" font-size="7" font-family="sans-serif" font-weight="bold" letter-spacing="1">ONE</text><path d="M58,46 Q80,26 138,34 L138,41 Q82,34 64,54 Z" fill="#111"/><path d="M58,52 Q80,34 136,42 L136,49 Q80,42 64,60 Z" fill="#111"/><path d="M58,58 Q80,42 134,50 L134,57 Q80,50 64,66 Z" fill="#111"/></svg>`
-};
-
-let cart=[], currentProduct=null, currentQty=1, currentVariant=0, orderNum=24;
-
-function renderProducts(){
-  document.getElementById('prodGrid').innerHTML=products.map(p=>`
-    <div class="prod-card" onclick="openProduct(${p.id})">
-      ${p.badge?`<div class="prod-badge">${p.badge}</div>`:''}
-      <div class="prod-img-wrap">${svgs[p.cat]||svgs['Tape']}</div>
-      <div class="prod-info">
-        <div class="prod-name">${p.name}</div>
-        <div class="prod-price">฿${p.price.toLocaleString()}</div>
-      </div>
-    </div>`).join('');
-}
-
-function openProduct(id){
-  currentProduct=products.find(p=>p.id===id);
-  currentQty=1; currentVariant=0;
-  document.getElementById('detailImg').innerHTML=svgs[currentProduct.cat]||svgs['Tape'];
-  document.getElementById('detailCat').textContent=currentProduct.cat;
-  document.getElementById('detailName').textContent=currentProduct.name;
-  document.getElementById('detailPrice').textContent='฿'+currentProduct.price.toLocaleString();
-  const comp=document.getElementById('detailCompare');
-  comp.textContent=currentProduct.compare?'฿'+currentProduct.compare.toLocaleString():'';
-  comp.style.display=currentProduct.compare?'block':'none';
-  document.getElementById('detailDesc').textContent=currentProduct.desc;
-  document.getElementById('detailSku').textContent=currentProduct.sku;
-  document.getElementById('detailCatMeta').textContent=currentProduct.cat;
-  document.getElementById('qtyNum').textContent='1';
-  renderVariants(); showPage('detail');
-}
-
-function renderVariants(){
-  document.getElementById('variantOpts').innerHTML=currentProduct.variants.map((v,i)=>{
-    const out=currentProduct.variantStock[i]===0;
-    return `<button class="variant-btn ${i===currentVariant?'selected':''} ${out?'out':''}" ${out?'disabled':''} onclick="selectVariant(${i})">${v}${out?' · sold out':''}</button>`;
-  }).join('');
-}
-
-function selectVariant(i){currentVariant=i;renderVariants();}
-function changeQty(d){currentQty=Math.max(1,currentQty+d);document.getElementById('qtyNum').textContent=currentQty;}
-
-function addToCart(){
-  if(!currentProduct)return;
-  const variant=currentProduct.variants[currentVariant];
-  const key=currentProduct.id+'-'+currentVariant;
-  const ex=cart.find(c=>c.key===key);
-  if(ex) ex.qty+=currentQty;
-  else cart.push({key,id:currentProduct.id,name:currentProduct.name,cat:currentProduct.cat,variant,price:currentProduct.price,qty:currentQty});
-  updateCartCount(); showToast('Added to cart ✓');
-}
-
-function updateCartCount(){
-  document.getElementById('cartCount').textContent=cart.reduce((s,c)=>s+c.qty,0);
-}
-
-function renderCart(){
-  const el=document.getElementById('cartItems');
-  if(!cart.length){
-    el.innerHTML='<div class="empty-cart"><i class="ti ti-shopping-bag"></i><div style="font-size:14px;margin-bottom:6px;">Your cart is empty</div><div style="font-size:12px;color:#bbb;">Go pick something good</div></div>';
-    document.getElementById('cartSummary').innerHTML='<a class="continue-link" onclick="showPage(\'home\')">← Continue Shopping</a>';
-    return;
-  }
-  el.innerHTML=cart.map(c=>`
-    <div class="cart-item">
-      <div class="cart-thumb"><div style="transform:scale(0.36);transform-origin:center;width:180%;height:180%;display:flex;align-items:center;justify-content:center;">${svgs[c.cat]||''}</div></div>
-      <div>
-        <div class="cart-item-name">${c.name}</div>
-        <div class="cart-item-variant">${c.variant}</div>
-        <div class="cart-item-price">฿${c.price.toLocaleString()} × ${c.qty}</div>
-      </div>
-      <div class="cart-item-right">
-        <span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span>
-        <span class="cart-remove" onclick="removeFromCart('${c.key}')">Remove</span>
-      </div>
-    </div>`).join('');
-  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const ship=sub>=1500?0:60;
-  document.getElementById('cartSummary').innerHTML=`
-    <div class="cart-summary">
-      <div class="summary-row"><span style="color:#777;">Subtotal</span><span>฿${sub.toLocaleString()}</span></div>
-      <div class="summary-row"><span style="color:#777;">Shipping</span><span>${ship===0?'<span style="color:#3b6d11;font-weight:500;">Free</span>':'฿'+ship}</span></div>
-      ${sub<1500?`<div style="font-size:11px;color:#888;margin-top:-2px;">สั่งเพิ่มอีก ฿${(1500-sub).toLocaleString()} รับส่งฟรี</div>`:''}
-      <div class="summary-row total"><span>Total</span><span>฿${(sub+ship).toLocaleString()}</span></div>
-    </div>
-    <button class="checkout-btn" onclick="goCheckout()">Proceed to Checkout →</button>
-    <a class="continue-link" onclick="showPage('home')">← Continue Shopping</a>`;
-}
-
-function removeFromCart(key){cart=cart.filter(c=>c.key!==key);updateCartCount();renderCart();}
-
-function goCheckout(){
-  const sub=cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const ship=sub>=1500?0:60;
-  document.getElementById('checkoutLines').innerHTML=cart.map(c=>`
-    <div class="order-line"><span>${c.name} × ${c.qty}<br><span style="color:#aaa;font-size:11px;">${c.variant}</span></span><span style="font-weight:500;">฿${(c.price*c.qty).toLocaleString()}</span></div>`).join('');
-  document.getElementById('cSubtotal').textContent='฿'+sub.toLocaleString();
-  document.getElementById('cShipping').textContent=ship===0?'Free':'฿'+ship;
-  document.getElementById('cTotal').textContent='฿'+(sub+ship).toLocaleString();
-  showPage('checkout');
-}
-
-function selectPay(el){
-  document.querySelectorAll('.pay-opt').forEach(x=>x.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
-function placeOrder(){
-  const name=document.getElementById('cfName').value.trim();
-  const email=document.getElementById('cfEmail').value.trim();
-  if(!name){showToast('ກະລຸນາກອກຊື່');return;}
-  if(!email){showToast('ກະລຸນາກອກອີເມວ');return;}
-  orderNum++;
-  document.getElementById('orderRef').textContent='Z1-0'+String(orderNum).padStart(3,'0');
-  cart=[]; updateCartCount(); showPage('success');
-}
-
-function showPage(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  if(p==='cart')renderCart();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.style.display='block';
-  setTimeout(()=>{t.style.display='none';},2000);
-}
-
-renderProducts();
-</script>
 </body>
 </html>
