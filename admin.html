@@ -214,7 +214,7 @@ function renderOrders(filter=''){
   const list=Object.entries(orders).filter(([,o])=>!filter||o.status===filter)
     .sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
   document.getElementById('orderTbody').innerHTML=list.length===0
-    ?`<tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">ยังไม่มีออเดอร์</td></tr>`
+    ?`<tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">ຍັງບໍ່ມີອໍເດີ້</td></tr>`
     :list.map(([id,o])=>`<tr>
       <td style="font-weight:500;font-size:12px;">${o.ref||id.slice(-6)}</td>
       <td><div style="font-weight:500;">${o.name||'—'}</div>
