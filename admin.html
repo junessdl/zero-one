@@ -42,7 +42,7 @@ onAuthStateChanged(auth, user => {
   adminUser = user;
   if (user) {
     // ตรวจสอบว่าเป็นเจ้าของหรือไม่
-    if (!ALLOWED_EMAILS.includes(user.email)) {
+    if (!ALLOWED_EMAILS.includes((user.email||'').toLowerCase())) {
       // ไม่ใช่เจ้าของ — logout ทันที
       signOut(auth);
       document.getElementById('loginScreen').style.display = 'flex';
