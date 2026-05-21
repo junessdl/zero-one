@@ -383,6 +383,22 @@ window.cSend=function(){
 window.cKey=function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cSend();} };
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
 function _tf(ts){return ts?new Date(ts).toLocaleTimeString('lo-LA',{hour:'2-digit',minute:'2-digit'}):''; }
+
+/* Mobile Bottom Nav */
+window.setMobNav=function(active){
+  ['Home','Cart','Orders','Policy'].forEach(n=>{
+    const el=document.getElementById('mn'+n);
+    if(el)el.classList.toggle('active',n.toLowerCase()===active);
+  });
+};
+/* sync cart badge in mob nav */
+const _origUpdateCartCount=updateCartCount||function(){};
+function updateCartCount(){
+  const cnt=cart.reduce((s,c)=>s+c.qty,0);
+  const el=document.getElementById('cartCount'); if(el)el.textContent=cnt;
+  const mob=document.getElementById('mobCartBadge');
+  if(mob){mob.textContent=cnt;mob.style.display=cnt>0?'inline':'none';}
+}
 </script>
 
 <style>
@@ -537,31 +553,75 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:768px){
-  .nav{padding:12px 16px;}
+  .nav{padding:10px 14px;}
   .nav-links{display:none;}
-  .hero{padding:32px 16px 24px;flex-direction:column;gap:16px;}
-  .hero-title{font-size:56px;}
+  .logo{font-size:16px;}
+  .nav-right{gap:8px;}
+  .cart-btn{padding:7px 12px;font-size:10px;}
+  .login-btn{padding:6px 10px;font-size:11px;}
+  .user-name{max-width:60px;}
+  .hero{padding:28px 16px 20px;flex-direction:column;gap:14px;}
+  .hero-title{font-size:52px;}
   .hero-right{padding-left:0;}
-  .hero-sub{max-width:100%;}
-  .products{padding:24px 16px;}
-  .prod-grid{grid-template-columns:1fr 1fr;}
-  .featured{padding:0 16px 24px;grid-template-columns:1fr;}
-  .brand-strip{padding:24px 16px;}
-  .footer{padding:18px 16px;flex-direction:column;align-items:flex-start;}
+  .hero-sub{max-width:100%;font-size:13px;}
+  .shop-btn{width:100%;text-align:center;padding:13px;}
+  .products{padding:20px 14px;}
+  .prod-grid{grid-template-columns:1fr 1fr;gap:1px;}
+  .prod-name{font-size:12px;}
+  .prod-price{font-size:12px;}
+  .featured{padding:0 14px 20px;grid-template-columns:1fr;}
+  .brand-strip{padding:20px 14px;grid-template-columns:1fr 1fr;}
+  .footer{padding:16px 14px;flex-direction:column;align-items:flex-start;gap:12px;}
+  .footer-links{gap:14px;}
+  /* detail */
   .detail-layout{grid-template-columns:1fr;}
-  .detail-img{padding:24px;min-height:220px;}
-  .detail-info{padding:20px 16px;}
-  .checkout-wrap{grid-template-columns:1fr;}
-  .checkout-summary-col{border-top:1px solid #e8e8e8;}
-  .cart-wrap{padding:20px 16px;}
+  .detail-img{padding:20px;min-height:200px;}
+  .detail-info{padding:18px 14px;}
+  .detail-name{font-size:20px;}
+  .variant-options{gap:6px;}
+  .variant-btn{padding:6px 10px;font-size:11px;}
+  .add-cart-btn{padding:14px;}
+  /* cart */
+  .cart-wrap{padding:18px 14px;}
+  .cart-item{gap:10px;}
+  .cart-item-name{font-size:12px;}
+  /* checkout */
+  .checkout-wrap{grid-template-columns:1fr;display:flex;flex-direction:column-reverse;}
+  .checkout-form{padding:20px 14px;border-right:none;border-bottom:1px solid #e8e8e8;}
+  .checkout-summary-col{padding:16px 14px;border-top:none;}
   .form-row{grid-template-columns:1fr;}
   .pay-options{grid-template-columns:1fr 1fr;}
-  .policy-wrap{padding:24px 16px;}
+  /* policy */
+  .policy-wrap{padding:20px 14px;}
+  /* chat */
+  .c-win{width:calc(100vw - 20px);right:10px;bottom:76px;}
+  .c-fab{right:14px;bottom:16px;}
+  /* login overlay */
+  .lo-card{padding:32px 24px;}
 }
 @media(max-width:420px){
   .prod-grid{grid-template-columns:1fr 1fr;}
-  .hero-title{font-size:44px;}
-  .feat-title{font-size:36px;}
+  .hero-title{font-size:40px;}
+  .feat-title{font-size:32px;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .brand-strip{grid-template-columns:1fr 1fr;}
+  .nav{padding:10px 12px;}
+  .logo{font-size:15px;}
+  .cart-btn span:first-child{display:none;}
+  .cart-btn{padding:7px 10px;}
+}
+
+/* ── Mobile Bottom Nav ── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:.5px solid #e8e8e8;z-index:100;padding:6px 0 max(6px,env(safe-area-inset-bottom));display:none;grid-template-columns:repeat(4,1fr);}
+.mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;cursor:pointer;color:#aaa;font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;position:relative;}
+.mob-nav-item i{font-size:22px;transition:color .15s;}
+.mob-nav-item.active,.mob-nav-item:active{color:#111;}
+.mnbadge{position:absolute;top:2px;right:calc(50% - 18px);background:#e24b4a;color:#fff;border-radius:99px;font-size:8px;padding:1px 5px;font-weight:700;}
+@media(max-width:768px){
+  .mob-nav{display:grid;}
+  .page.active{padding-bottom:74px;}
+  .c-fab{bottom:76px;right:14px;}
+  .c-win{bottom:130px;right:10px;}
 }
 
 /* ── Chat FAB & Window ── */
@@ -861,6 +921,23 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#fff;
     <div class="back-link" onclick="showPage('home')"><i class="ti ti-arrow-left"></i> Back</div>
     <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.05em;margin-bottom:20px;">ປະຫວັດການສັ່ງຊື້</div>
     <div id="myOrdersList"><div style="text-align:center;padding:40px;color:#aaa;">ກຳລັງໂຫຼດ...</div></div>
+  </div>
+</div>
+
+<!-- Mobile Bottom Nav -->
+<div class="mob-nav" id="mobNav">
+  <div class="mob-nav-item active" id="mnHome" onclick="showPage('home');setMobNav('home')">
+    <i class="ti ti-home"></i>Shop
+  </div>
+  <div class="mob-nav-item" id="mnCart" onclick="showPage('cart');setMobNav('cart')" style="position:relative;">
+    <i class="ti ti-shopping-bag"></i>Cart
+    <span class="mnbadge" id="mobCartBadge" style="display:none;"></span>
+  </div>
+  <div class="mob-nav-item" id="mnOrders" onclick="showPage('orders-history');setMobNav('orders')">
+    <i class="ti ti-package"></i>Orders
+  </div>
+  <div class="mob-nav-item" id="mnPolicy" onclick="showPage('policy');setMobNav('policy')">
+    <i class="ti ti-file-text"></i>Policy
   </div>
 </div>
 
