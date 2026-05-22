@@ -53,7 +53,7 @@ onAuthStateChanged(auth, user => {
     }
     document.getElementById('loginError').style.display  = 'none';
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').style.display    = 'flex';
+    document.getElementById('adminApp').style.display    = 'grid';
     document.getElementById('adminAvatar').src = user.photoURL||'';
     document.getElementById('adminName').textContent = user.displayName||user.email;
   } else {
@@ -356,8 +356,7 @@ function _atf(ts){return ts?new Date(ts).toLocaleTimeString('lo-LA',{hour:'2-dig
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5f3;}
-.layout{display:flex;flex-direction:column;min-height:100vh;}
-.layout-body{display:grid;grid-template-columns:210px 1fr;flex:1;min-height:0;}
+.layout{display:grid;grid-template-columns:210px 1fr;min-height:100vh;}
 
 /* Sidebar */
 .sidebar{background:#fff;border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;}
@@ -463,13 +462,12 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:768px){
-  .layout{display:flex;flex-direction:column;}
-  .layout-body{display:block;}
+  .layout{display:block;}
   .sidebar{position:fixed;top:0;left:0;height:100%;width:230px;z-index:60;transform:translateX(-100%);transition:transform .25s;box-shadow:4px 0 24px rgba(0,0,0,.12);}
   .sidebar.open{transform:translateX(0);}
   .top-bar{display:flex;}
   .close-sb{display:block;}
-  .main{padding:12px;padding-top:8px;}
+  .main{padding:14px;}
   .stats{grid-template-columns:1fr 1fr;}
   .stat-val{font-size:22px;}
   .info-grid{grid-template-columns:1fr;}
@@ -481,8 +479,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── Admin Chat Page ── */
-.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 110px);min-height:400px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
-@media(min-width:769px){.chat-pg{height:calc(100vh - 80px);}}
+.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 110px);min-height:380px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
 .ac-sidebar{border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden;}
 .ac-sidebar-hdr{padding:13px 16px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.05em;border-bottom:.5px solid #e8e8e8;flex-shrink:0;background:#fff;}
 #aCList{flex:1;overflow-y:auto;}
@@ -518,11 +515,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 .cm-me .cbb{background:#111;color:#fff;border-bottom-right-radius:3px;}
 .cm-them .cbb{background:#fff;color:#111;border:.5px solid #e8e8e8;border-bottom-left-radius:3px;}
 .ct{font-size:10px;color:#bbb;margin-top:2px;}
-@media(max-width:768px){
-  .chat-pg{grid-template-columns:1fr;height:auto;min-height:0;}
-  .ac-sidebar{max-height:260px;overflow-y:auto;}
-  .ac-panel{height:60vh;min-height:300px;}
-}
+@media(max-width:768px){.chat-pg{grid-template-columns:1fr;height:auto;}}
 
 
 /* ── Admin Auth ── */
@@ -548,6 +541,14 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 </head>
 <body>
 
+<!-- Mobile top bar -->
+<div class="top-bar">
+  <button class="hbg" onclick="openSB()"><i class="ti ti-menu-2"></i></button>
+  <span class="top-bar-logo">ZERO ONE</span>
+  <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
+</div>
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+
 <!-- LOGIN SCREEN -->
 <div id="loginScreen" style="display:flex;">
   <div class="login-card">
@@ -563,15 +564,6 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 </div>
 
 <div class="layout" id="adminApp" style="display:none;">
-  <!-- Mobile Top Bar (inside adminApp) -->
-  <div class="top-bar">
-    <button class="hbg" onclick="openSB()"><i class="ti ti-menu-2"></i></button>
-    <span class="top-bar-logo">ZERO ONE</span>
-    <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
-  </div>
-  <div class="overlay" id="overlay" onclick="closeSB()"></div>
-  <!-- Sidebar + Main wrapper -->
-  <div class="layout-body">
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="s-logo">
@@ -767,21 +759,18 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
         <div class="page-title">Messages</div>
       </div>
       <div class="chat-pg">
-        <!-- sidebar -->
         <div class="ac-sidebar">
           <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
           <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
         </div>
-        <!-- empty state -->
         <div class="ac-panel ac-empty" id="aCEmpty">
           <i class="ti ti-message-circle"></i>
           <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
         </div>
-        <!-- active panel -->
         <div class="ac-panel" id="aCPanel" style="display:none;">
           <div class="ac-phdr">
-            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
-            <div><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
+            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;" id="aCAvatar"><i class="ti ti-user"></i></div>
+            <div style="flex:1;min-width:0;"><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
           </div>
           <div class="ac-msgs" id="aCBox"></div>
           <div class="ac-inp-row">
@@ -792,8 +781,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
     </div>
 
-  </div><!-- .layout-body -->
-</div><!-- #adminApp -->
+  </div><!-- /.main -->
 
 <div class="toast" id="toast"></div>
 
