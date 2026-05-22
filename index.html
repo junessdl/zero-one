@@ -52,6 +52,9 @@ onAuthStateChanged(auth, user => {
       name: user.displayName, email: user.email,
       photo: user.photoURL, lastSeen: Date.now()
     });
+    // ใช้ uid เป็น chatId ของลูกค้า (แยกคนละ account)
+    _cid = user.uid;
+    localStorage.setItem('z1cid', _cid);
   } else {
     // แสดง login overlay
     document.getElementById('loginOverlay').style.display = 'flex';
@@ -348,8 +351,8 @@ function showToast(msg){
 /* ════════════════════════════════
    CUSTOMER CHAT  (Firebase RT DB)
    ════════════════════════════════ */
-let _cid = localStorage.getItem('z1cid');
-if (!_cid) { _cid='c'+Date.now()+'_'+Math.random().toString(36).slice(2,6); localStorage.setItem('z1cid',_cid); }
+// _cid จะถูกตั้งค่าจาก uid หลัง login
+let _cid = localStorage.getItem('z1cid') || null;
 let _cOpen=false, _cReady=false, _cUnread=0;
 
 window.toggleChat=function(){
@@ -376,8 +379,12 @@ function _listenChat(){
 window.cSend=function(){
   const inp=document.getElementById('cInp'); const txt=(inp.value||'').trim(); if(!txt)return; inp.value='';
   const nm=(document.getElementById('cfName')||{}).value||'ລູກຄ້າ';
-  push(ref(db,'chats/'+_cid+'/msgs'),{text:txt,s:'buyer',nm,t:Date.now()});
-  update(ref(db,'chats/'+_cid),{nm,last:txt,lt:Date.now(),unread:true,upd:Date.now()});
+  const photo = currentUser?.photoURL || '';
+  push(ref(db,'chats/'+_cid+'/msgs'),{text:txt,s:'buyer',nm,photo,t:Date.now()});
+  update(ref(db,'chats/'+_cid),{
+    nm, email: currentUser?.email||'', photo,
+    uid: _cid, last:txt, lt:Date.now(), unread:true, upd:Date.now()
+  });
   if(!_cReady){_cReady=true;_listenChat();}
 };
 window.cKey=function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cSend();} };
