@@ -479,7 +479,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── Admin Chat Page ── */
-.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 110px);min-height:380px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
+.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 140px);min-height:380px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
 .ac-sidebar{border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden;}
 .ac-sidebar-hdr{padding:13px 16px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.05em;border-bottom:.5px solid #e8e8e8;flex-shrink:0;background:#fff;}
 #aCList{flex:1;overflow-y:auto;}
@@ -685,6 +685,37 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
     </div>
 
+    <!-- CHAT PAGE -->
+    <div class="page" id="page-chat">
+      <div class="page-header">
+        <div class="page-title">Messages</div>
+      </div>
+      <div class="chat-pg">
+        <!-- sidebar -->
+        <div class="ac-sidebar">
+          <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
+          <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
+        </div>
+        <!-- empty state -->
+        <div class="ac-panel ac-empty" id="aCEmpty">
+          <i class="ti ti-message-circle"></i>
+          <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
+        </div>
+        <!-- active panel -->
+        <div class="ac-panel" id="aCPanel" style="display:none;">
+          <div class="ac-phdr">
+            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
+            <div><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
+          </div>
+          <div class="ac-msgs" id="aCBox"></div>
+          <div class="ac-inp-row">
+            <textarea class="ac-inp" id="aCInp" placeholder="ພິມຂໍ້ຄວາມ..." rows="1" onkeydown="aKey(event)"></textarea>
+            <button class="ac-send" onclick="aSend()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -752,36 +783,6 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
     </div>
   </div>
 </div>
-
-    <!-- CHAT PAGE -->
-    <div class="page" id="page-chat">
-      <div class="page-header">
-        <div class="page-title">Messages</div>
-      </div>
-      <div class="chat-pg">
-        <div class="ac-sidebar">
-          <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
-          <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
-        </div>
-        <div class="ac-panel ac-empty" id="aCEmpty">
-          <i class="ti ti-message-circle"></i>
-          <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
-        </div>
-        <div class="ac-panel" id="aCPanel" style="display:none;">
-          <div class="ac-phdr">
-            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;" id="aCAvatar"><i class="ti ti-user"></i></div>
-            <div style="flex:1;min-width:0;"><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
-          </div>
-          <div class="ac-msgs" id="aCBox"></div>
-          <div class="ac-inp-row">
-            <textarea class="ac-inp" id="aCInp" placeholder="ພິມຂໍ້ຄວາມ..." rows="1" onkeydown="aKey(event)"></textarea>
-            <button class="ac-send" onclick="aSend()"><i class="ti ti-send"></i></button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /.main -->
 
 <div class="toast" id="toast"></div>
 
