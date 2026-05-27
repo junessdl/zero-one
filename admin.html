@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZERO ONE — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -112,19 +112,19 @@ function renderProducts(){
         :`<div style="width:38px;height:38px;background:#f0f0ee;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-photo" style="color:#ccc;font-size:15px;"></i></div>`;
       return`<tr>
         <td><div style="display:flex;align-items:center;gap:10px;">${thumb}<div>
-          <div style="font-weight:500;font-size:12px;">${p.name||'—'}</div>
+          <div style="font-weight:500;font-size:12px;" class="prod-name-lbl">${p.name||'—'}</div>
           <div style="font-size:10px;color:#aaa;">${p.sku||''}</div>
         </div></div></td>
         <td style="font-size:12px;">${p.cat||'—'}</td>
-        <td style="font-weight:500;">฿${(p.price||0).toLocaleString()}</td>
+        <td style="font-weight:500;" class="prod-price-lbl">฿${(p.price||0).toLocaleString()}</td>
         <td><div style="display:flex;align-items:center;gap:6px;">
-          <div style="height:4px;background:#eee;border-radius:2px;width:60px;overflow:hidden;">
+          <div style="height:4px;background:#eee;border-radius:2px;width:60px;overflow:hidden;" class="prod-progress-bar">
             <div style="height:100%;width:${fill}%;background:${col};border-radius:2px;"></div>
           </div>
-          <span style="font-size:12px;">${p.stock||0}</span>
+          <span style="font-size:12px;" class="prod-stock-lbl">Stock: ${p.stock||0}</span>
         </div></td>
         <td><span class="badge ${st.c}">${st.l}</span></td>
-        <td><div style="display:flex;gap:5px;">
+        <td><div style="display:flex;gap:5px;" class="prod-action-btns">
           <button class="btn sm" onclick="openEdit('${id}')"><i class="ti ti-edit"></i> Edit</button>
           <button class="btn sm danger" onclick="deleteProd('${id}')"><i class="ti ti-trash"></i></button>
         </div></td>
@@ -156,7 +156,7 @@ window.openEdit=id=>{
   uploadFile=null;
   const prev=document.getElementById('imgPreview');
   prev.src=p.imageUrl||''; prev.style.display=p.imageUrl?'block':'none';
-  document.getElementById('imgNote').textContent=p.imageUrl?'ມີຮູບຢູ່ແລ້ວ — ອັບໂຫຼດໃໝ່ເພື່ອປ່ຽນ':'ຍັງບໍ່ມີຮູບ';
+  document.getElementById('imgNote').textContent=p.imageUrl?'มีฮูปຢູ່ແລ້ວ — ອັບໂຫຼດໃໝ່ເພື່ອປ່ຽນ':'ຍັງບໍ່ມີຮູບ';
   document.getElementById('modalTitle').textContent='Edit Product';
   document.getElementById('modal').classList.add('open');
 };
@@ -252,14 +252,14 @@ function renderOrders(filter=''){
   document.getElementById('orderTbody').innerHTML=list.length===0
     ?`<tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">ยังไม่มีออเดอร์</td></tr>`
     :list.map(([id,o])=>`<tr>
-      <td style="font-weight:500;font-size:12px;">${o.ref||id.slice(-6)}</td>
+      <td style="font-weight:500;font-size:12px;" class="ord-ref-lbl">Ref: ${o.ref||id.slice(-6)}</td>
       <td><div style="font-weight:500;">${o.name||'—'}</div>
           <div style="font-size:10px;color:#aaa;">${o.email||''}</div></td>
-      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.items||'—'}</td>
-      <td style="font-weight:500;">฿${(o.total||0).toLocaleString()}</td>
+      <td style="font-size:11px;" class="ord-items-lbl">${o.items||'—'}</td>
+      <td style="font-weight:500;" class="ord-total-lbl">฿${(o.total||0).toLocaleString()}</td>
       <td><span class="badge ${stCls[o.status]||'gray'}">${o.status||'—'}</span></td>
-      <td style="font-size:11px;color:#aaa;white-space:nowrap;">${fmt(o.createdAt)}</td>
-      <td><button class="btn sm" onclick="openOrderPanel('${id}')">View</button></td>
+      <td style="font-size:11px;color:#aaa;white-space:nowrap;" class="ord-date-lbl">${fmt(o.createdAt)}</td>
+      <td><button class="btn sm primary ord-view-btn" onclick="openOrderPanel('${id}')">View</button></td>
     </tr>`).join('');
 }
 
@@ -353,8 +353,8 @@ function _atf(ts){return ts?new Date(ts).toLocaleTimeString('lo-LA',{hour:'2-dig
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5f3;overflow-x:hidden;}
-.layout{display:grid;grid-template-columns:210px 1fr;grid-template-rows:1fr;min-height:100vh;width:100%;max-width:100%;}
+body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5f3;}
+.layout{display:grid;grid-template-columns:210px 1fr;grid-template-rows:auto 1fr;min-height:100vh;max-width:100vw;}
 
 /* Sidebar */
 .sidebar{background:#fff;border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;}
@@ -370,12 +370,12 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5
 .nav-badge{margin-left:auto;background:#e24b4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:99px;}
 
 /* Top bar (mobile) */
-.top-bar{display:none;background:#fff;border-bottom:.5px solid #e8e8e8;padding:12px 16px;align-items:center;gap:10px;position:sticky;top:0;z-index:60;}
+.top-bar{display:none;background:#fff;border-bottom:.5px solid #e8e8e8;padding:12px 16px;align-items:center;gap:10px;position:sticky;top:0;z-index:60;grid-column:1/-1;}
 .top-bar-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;}
 .hbg{background:none;border:none;cursor:pointer;font-size:22px;color:#111;padding:2px;}
 
 /* Main */
-.main{padding:22px 26px;overflow-x:hidden;overflow-y:auto;min-width:0;width:100%;}
+.main{padding:22px 26px;overflow-x:hidden;overflow-y:auto;min-width:0;max-width:100%;}
 .page{display:none;} .page.active{display:block;}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
 .page-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;}
@@ -390,7 +390,7 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5
 .btn.danger:hover{background:#fff5f5;}
 
 /* Badges */
-.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:99px;font-weight:500;white-space:nowrap;}
+.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:99px;font-weight:500;}
 .badge.green{background:#eaf3de;color:#3b6d11;}
 .badge.red{background:#fcebeb;color:#a32d2d;}
 .badge.amber{background:#faeeda;color:#854f0b;}
@@ -399,8 +399,8 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5
 
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
-.stat{background:#fff;border-radius:8px;padding:14px 16px;border:.5px solid #e8e8e8;min-width:0;}
-.stat-lbl{font-size:10px;color:#aaa;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat{background:#fff;border-radius:8px;padding:14px 16px;border:.5px solid #e8e8e8;}
+.stat-lbl{font-size:10px;color:#aaa;letter-spacing:.1em;text-transform:uppercase;}
 .stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1.1;margin-top:2px;}
 
 /* Toolbar */
@@ -408,30 +408,30 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5
 .search-wrap{flex:1;min-width:150px;position:relative;}
 .search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#bbb;font-size:14px;}
 .search-wrap input{width:100%;padding:8px 10px 8px 30px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
-select.flt{padding:8px 10px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;outline:none;}
+select.flt{padding:8px 10px;border:.5px solid #e0e0e0;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
 
-/* Table responsive wrapping */
-.tbl{background:#fff;border:.5px solid #e8e8e8;border-radius:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px;width:100%;max-width:100%;}
+/* Table */
+.tbl{background:#fff;border:.5px solid #e8e8e8;border-radius:10px;overflow:auto;margin-bottom:16px;width:100%;}
 table{width:100%;border-collapse:collapse;table-layout:auto;}
 thead th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;padding:10px 12px;text-align:left;border-bottom:.5px solid #e8e8e8;background:#fafaf8;font-weight:500;white-space:nowrap;}
 tbody tr{border-bottom:.5px solid #e8e8e8;transition:background .1s;}
 tbody tr:last-child{border-bottom:none;}
 tbody tr:hover{background:#fafaf8;}
-td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
+td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 
 /* Modal */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
 .modal-bg.open{display:flex;}
-.modal{background:#fff;border-radius:12px;width:100%;max-width:460px;margin:auto;box-shadow:0 12px 40px rgba(0,0,0,.15);overflow:hidden;}
-.modal-hdr{padding:16px 20px 12px;border-bottom:.5px solid #eee;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:10;}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:460px;margin:auto;box-shadow:0 12px 40px rgba(0,0,0,.15);}
+.modal-hdr{padding:16px 20px 12px;border-bottom:.5px solid #eee;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0;}
 .modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
-.modal-body{padding:16px 20px;max-height:calc(100vh - 140px);overflow-y:auto;}
+.modal-body{padding:16px 20px;}
 .field{margin-bottom:12px;}
 .field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:5px;}
-.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:.5px solid #ddd;border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;outline:none;}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:.5px solid #ddd;border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#111;}
 .field textarea{resize:vertical;min-height:60px;}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-ftr{padding:12px 20px;border-top:.5px solid #eee;display:flex;justify-content:flex-end;gap:8px;background:#fff;}
+.modal-ftr{padding:12px 20px;border-top:.5px solid #eee;display:flex;justify-content:flex-end;gap:8px;border-radius:0 0 12px 12px;}
 
 /* Image upload */
 .img-upload-box{border:1.5px dashed #ddd;border-radius:8px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s;}
@@ -447,9 +447,9 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 .order-panel.open{display:block;}
 .order-panel h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;}
 .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0;}
-.info-blk{background:#fafaf8;border-radius:6px;padding:12px;min-width:0;}
+.info-blk{background:#fafaf8;border-radius:6px;padding:12px;}
 .info-blk .lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:5px;}
-.info-blk .val{font-size:12px;line-height:1.7;word-break:break-word;}
+.info-blk .val{font-size:12px;line-height:1.7;}
 
 /* Overlay */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:55;}
@@ -458,8 +458,83 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 /* Toast */
 .toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:10px 18px;font-size:12px;border-radius:6px;display:none;z-index:999;}
 
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  .layout{display:block;}
+  .sidebar{position:fixed;top:0;left:0;height:100%;width:240px;z-index:100;
+    transform:translateX(-100%);transition:transform .25s;
+    box-shadow:4px 0 24px rgba(0,0,0,.15);}
+  .sidebar.open{transform:translateX(0);}
+  .top-bar{display:flex;width:100%;}
+  .close-sb{display:block;}
+  .main{padding:12px;overflow-x:hidden;width:100% !important;max-width:100% !important;}
+  .stats{grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-val{font-size:20px;}
+  .info-grid{grid-template-columns:1fr;}
+  .field-row{grid-template-columns:1fr;}
+  .toolbar{flex-direction:column;}
+  .search-wrap,.flt-wrap{width:100%;}
+  select.flt{width:100%;}
+  
+  /* ── ແກ້ໄຂລະບົບຕາຕະລາງໃຫ້ສະແດງຜົນເຕັມຈໍ 100% ບົນມືຖື (Mobile Card) ── */
+  .tbl {background:transparent; border:none; overflow:visible; width:100%;}
+  table {width:100% !important; min-width:0 !important; max-width:100% !important; display:block;}
+  thead {display:none;} /* ຊ່ອນຫົວຕາຕະລາງ */
+  tbody {display:block; width:100%;}
+  tbody tr {
+    display:flex; flex-direction:column; gap:6px;
+    background:#fff; border:.5px solid #e8e8e8; border-radius:10px;
+    padding:14px; margin-bottom:10px; width:100% !important; box-sizing:border-box;
+  }
+  td {display:block; padding:0 !important; border:none !important; width:100% !important; text-align:left;}
+  
+  /* ຈັດຕຳແໜ່ງ Orders Card */
+  .ord-ref-lbl {font-size:11px; color:#aaa;}
+  .ord-items-lbl {
+    font-size:12px; color:#555; background:#fafaf8; 
+    padding:6px 10px !important; border-radius:6px; margin:4px 0;
+    white-space:normal !important; max-width:100% !important; overflow:visible;
+  }
+  .ord-total-lbl {font-size:14px; font-weight:600; margin-top:2px;}
+  .ord-date-lbl {font-size:11px; color:#bbb; margin-bottom:4px;}
+  .ord-view-btn {width:100% !important; display:flex !important; justify-content:center; padding:10px !important; margin-top:6px;}
+
+  /* ຈັດຕຳແໜ່ງ Products Card */
+  .prod-name-lbl {font-size:14px; font-weight:500;}
+  .prod-price-lbl {font-size:14px; font-weight:600; margin-top:2px;}
+  .prod-progress-bar {display:none !important;} /* ຊ່ອນແຖບ progress ບົນມືຖືເພື່ອຫຼຸດຄວາມຮົກ */
+  .prod-stock-lbl {font-size:12px; color:#555;}
+  .prod-action-btns {display:grid !important; grid-template-columns:1fr auto; gap:6px; margin-top:6px;}
+  .prod-action-btns .btn {display:flex; justify-content:center; padding:9px !important;}
+
+  /* order panel */
+  .order-panel{padding:12px;}
+  .info-grid{grid-template-columns:1fr;}
+  
+  /* chat page responsive */
+  .chat-pg{grid-template-columns:1fr; height:auto; width:100% !important; max-width:100% !important;}
+  .ac-sidebar{max-height:220px; border-right:none; border-bottom:.5px solid #e8e8e8; width:100% !important;}
+  .ac-panel{height:55vh; min-height:260px; width:100% !important;}
+  
+  /* modal */
+  .modal-bg{padding:8px; align-items:flex-end;}
+  .modal{max-width:100%; border-radius:16px 16px 0 0; max-height:95vh;}
+}
+
+@media(max-width:420px){
+  .main{padding:8px;}
+  .stats{gap:6px;}
+  .stat{padding:10px 10px;}
+  .stat-val{font-size:18px;}
+  .stat-lbl{font-size:9px;}
+  .page-title{font-size:18px;}
+  .btn{padding:6px 10px; font-size:10px;}
+  .btn.sm{padding:4px 7px; font-size:9px;}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ── Admin Chat Page ── */
-.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 140px);min-height:450px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
+.chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 80px);min-height:380px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
 .ac-sidebar{border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden;}
 .ac-sidebar-hdr{padding:13px 16px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.05em;border-bottom:.5px solid #e8e8e8;flex-shrink:0;background:#fff;}
 #aCList{flex:1;overflow-y:auto;}
@@ -474,21 +549,19 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 .aci-last{font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
 .aci-t{font-size:10px;color:#bbb;flex-shrink:0;}
 .udot{display:inline-block;width:7px;height:7px;background:#e24b4a;border-radius:50%;vertical-align:middle;margin-left:4px;}
-
 /* right panel */
-.ac-panel{display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.ac-panel{display:flex;flex-direction:column;overflow:hidden;}
 .ac-phdr{padding:13px 16px;border-bottom:.5px solid #e8e8e8;display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff;}
 .ac-phdr .ac-nm{font-size:13px;font-weight:500;}
-.ac-phdr .ac-em{font-size:11px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ac-phdr .ac-em{font-size:11px;color:#aaa;}
 .ac-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px;background:#f8f8f6;}
-.ac-inp-row{padding:10px 12px;border-top:.5px solid #e8e8e8;display:flex;gap:7px;flex-shrink:0;background:#fff;align-items:center;}
+.ac-inp-row{padding:10px 12px;border-top:.5px solid #e8e8e8;display:flex;gap:7px;flex-shrink:0;background:#fff;}
 .ac-inp{flex:1;padding:8px 12px;border:.5px solid #e0e0e0;border-radius:18px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:none;line-height:1.4;max-height:80px;}
 .ac-inp:focus{border-color:#111;}
 .ac-send{background:#111;color:#fff;border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
 .ac-send:hover{background:#333;}
-.ac-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#bbb;background:#f8f8f6;}
+.ac-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#bbb;}
 .ac-empty i{font-size:32px;}
-
 /* shared bubbles */
 .cm{display:flex;flex-direction:column;max-width:78%;}
 .cm-me{align-self:flex-end;align-items:flex-end;}
@@ -498,7 +571,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 .cm-them .cbb{background:#fff;color:#111;border:.5px solid #e8e8e8;border-bottom-left-radius:3px;}
 .ct{font-size:10px;color:#bbb;margin-top:2px;}
 
-/* Admin Auth */
+/* ── Admin Auth ── */
 #loginScreen{position:fixed;inset:0;background:#f5f5f3;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:24px;}
 .login-card{background:#fff;border-radius:14px;padding:40px 36px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.1);width:320px;max-width:90vw;}
 .login-card-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.2em;margin-bottom:4px;}
@@ -506,64 +579,15 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 .g-login-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 16px;border:1px solid #e0e0e0;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:#111;transition:box-shadow .15s;}
 .g-login-btn:hover{box-shadow:0 2px 10px rgba(0,0,0,.12);}
 .g-login-btn img{width:20px;height:20px;}
-.admin-user-bar{display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:.5px solid #e8e8e8;margin-top:auto;background:#fff;}
+.admin-user-bar{display:flex;align-items:center;gap:8px;padding:10px 18px;border-top:.5px solid #e8e8e8;margin-top:auto;}
 .admin-user-bar img{width:28px;height:28px;border-radius:50%;border:1.5px solid #e0e0e0;object-fit:cover;}
 .admin-user-bar .aname{font-size:11px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .logout-btn{background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:4px;}
 .logout-btn:hover{color:#e24b4a;}
+
+/* ── Admin login error ── */
 #loginError{background:#fff0f0;border:.5px solid #fcc;border-radius:8px;padding:12px 16px;font-size:12px;color:#c0392b;margin-top:12px;white-space:pre-line;display:none;text-align:left;line-height:1.7;}
 .login-card-sub2{font-size:11px;color:#bbb;margin-bottom:20px;line-height:1.6;}
-
-/* ══ RESPONSIVE MOBILE ══ */
-@media(max-width:768px){
-  .layout{display:block;}
-  
-  /* sidebar drawer */
-  .sidebar{position:fixed;top:0;left:0;height:100%;width:240px;z-index:100;
-    transform:translateX(-100%);transition:transform .25s;
-    box-shadow:4px 0 24px rgba(0,0,0,.15);}
-  .sidebar.open{transform:translateX(0);}
-  
-  /* mobile navigation top header */
-  .top-bar{display:flex;}
-  .close-sb{display:block;}
-  
-  /* main content area padding */
-  .main{padding:16px 12px;width:100%;max-width:100%;box-sizing:border-box;}
-  
-  /* responsive grid stats */
-  .stats{grid-template-columns:1fr 1fr;gap:8px;}
-  .stat{padding:12px;}
-  .stat-val{font-size:22px;}
-  
-  /* controls toolbar vertical stack */
-  .toolbar{flex-direction:column;gap:8px;}
-  .search-wrap, select.flt{width:100%;}
-  
-  /* table content scroll setup */
-  table{min-width:600px;}
-  
-  /* layout stack panel details */
-  .info-grid{grid-template-columns:1fr;gap:8px;}
-  .field-row{grid-template-columns:1fr;gap:0;}
-  
-  /* chat page responsive breakdown layout */
-  .chat-pg{grid-template-columns:1fr;grid-template-rows:180px 1fr;height:calc(100vh - 130px);}
-  .ac-sidebar{border-right:none;border-bottom:.5px solid #e8e8e8;}
-  .ac-panel{height:100%;}
-  
-  /* modal scaling logic */
-  .modal-bg{padding:0;align-items:flex-end;}
-  .modal{max-width:100%;border-radius:16px 16px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.1);}
-  .modal-body{max-height:75vh;}
-}
-
-@media(max-width:420px){
-  .stats{grid-template-columns:1fr 1fr;gap:6px;}
-  .stat-val{font-size:20px;}
-  .page-title{font-size:20px;}
-}
-@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -582,6 +606,12 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
 </div>
 
 <div class="layout" id="adminApp" style="display:none;">
+  <div class="top-bar" id="adminTopBar">
+    <button class="hbg" onclick="openSB()"><i class="ti ti-menu-2"></i></button>
+    <span class="top-bar-logo">ZERO ONE</span>
+    <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
+  </div>
+  <div class="overlay" id="overlay" onclick="closeSB()"></div>
   <div class="sidebar" id="sidebar">
     <div class="s-logo">
       <div>
@@ -613,123 +643,114 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
     </div>
   </div>
 
-  <div style="display: flex; flex-direction: column; min-width: 0; width: 100%;">
-    <div class="top-bar" id="adminTopBar">
-      <button class="hbg" onclick="openSB()"><i class="ti ti-menu-2"></i></button>
-      <span class="top-bar-logo">ZERO ONE</span>
-      <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
+  <div class="main">
+    <div class="page active" id="page-orders">
+      <div class="page-header">
+        <div class="page-title">Orders</div>
+        <select class="flt" onchange="filterOrders(this.value)">
+          <option value="">All Status</option>
+          <option>Pending</option><option>Processing</option>
+          <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+        </select>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val" id="oTotal">—</div></div>
+        <div class="stat"><div class="stat-lbl">Pending</div><div class="stat-val" style="color:#ef9f27;" id="oPending">—</div></div>
+        <div class="stat"><div class="stat-lbl">Shipped</div><div class="stat-val" id="oShipped">—</div></div>
+        <div class="stat"><div class="stat-lbl">Revenue</div><div class="stat-val" style="font-size:17px;margin-top:5px;" id="oRevenue">—</div></div>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody id="orderTbody">
+            <tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">
+              <i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Loading…
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="order-panel" id="orderPanel">
+        <input type="hidden" id="panelId">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+          <h3>Order <span id="panelOrderRef"></span></h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="panelStatusSel" class="flt">
+              <option>Pending</option><option>Processing</option>
+              <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
+            </select>
+            <button class="btn primary sm" onclick="updateOrderStatus()">Update</button>
+            <button class="btn sm" onclick="document.getElementById('orderPanel').classList.remove('open')"><i class="ti ti-x"></i></button>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-blk"><div class="lbl">Customer</div><div class="val" id="panelCust"></div></div>
+          <div class="info-blk"><div class="lbl">Address</div><div class="val" id="panelAddr"></div></div>
+          <div class="info-blk"><div class="lbl">Payment</div><div class="val" id="panelPayment"></div></div>
+        </div>
+        <div class="info-blk"><div class="lbl">Items</div><div class="val" id="panelItems"></div></div>
+      </div>
     </div>
-    <div class="overlay" id="overlay" onclick="closeSB()"></div>
 
-    <div class="main">
-      <div class="page active" id="page-orders">
-        <div class="page-header">
-          <div class="page-title">Orders</div>
-          <select class="flt" onchange="filterOrders(this.value)">
-            <option value="">All Status</option>
-            <option>Pending</option><option>Processing</option>
-            <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
-          </select>
-        </div>
-        <div class="stats">
-          <div class="stat"><div class="stat-lbl">Total</div><div class="stat-val" id="oTotal">—</div></div>
-          <div class="stat"><div class="stat-lbl">Pending</div><div class="stat-val" style="color:#ef9f27;" id="oPending">—</div></div>
-          <div class="stat"><div class="stat-lbl">Shipped</div><div class="stat-val" id="oShipped">—</div></div>
-          <div class="stat"><div class="stat-lbl">Revenue</div><div class="stat-val" style="font-size:16px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="oRevenue">—</div></div>
-        </div>
-        <div class="tbl">
-          <table>
-            <thead><tr><th>Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
-            <tbody id="orderTbody">
-              <tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">
-                <i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Loading…
-              </td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="order-panel" id="orderPanel">
-          <input type="hidden" id="panelId">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <h3>Order <span id="panelOrderRef"></span></h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-              <select id="panelStatusSel" class="flt" style="padding:5px 10px; font-size:12px;">
-                <option>Pending</option><option>Processing</option>
-                <option>Shipped</option><option>Delivered</option><option>Cancelled</option>
-              </select>
-              <button class="btn primary sm" onclick="updateOrderStatus()">Update</button>
-              <button class="btn sm" onclick="document.getElementById('orderPanel').classList.remove('open')"><i class="ti ti-x"></i></button>
-            </div>
-          </div>
-          <div class="info-grid">
-            <div class="info-blk"><div class="lbl">Customer</div><div class="val" id="panelCust"></div></div>
-            <div class="info-blk"><div class="lbl">Address</div><div class="val" id="panelAddr"></div></div>
-            <div class="info-blk"><div class="lbl">Payment</div><div class="val" id="panelPayment"></div></div>
-          </div>
-          <div class="info-blk"><div class="lbl">Items</div><div class="val" id="panelItems"></div></div>
-        </div>
+    <div class="page" id="page-products">
+      <div class="page-header">
+        <div class="page-title">Products & Stock</div>
+        <button class="btn primary" onclick="openAdd()"><i class="ti ti-plus"></i> Add Product</button>
       </div>
-
-      <div class="page" id="page-products">
-        <div class="page-header">
-          <div class="page-title">Products & Stock</div>
-          <button class="btn primary" onclick="openAdd()"><i class="ti ti-plus"></i> Add Product</button>
-        </div>
-        <div class="stats">
-          <div class="stat"><div class="stat-lbl">Total SKUs</div><div class="stat-val" id="statTotal">—</div></div>
-          <div class="stat"><div class="stat-lbl">In Stock</div><div class="stat-val" id="statIn">—</div></div>
-          <div class="stat"><div class="stat-lbl">Low Stock</div><div class="stat-val" id="statLow">—</div></div>
-          <div class="stat"><div class="stat-lbl">Out of Stock</div><div class="stat-val" id="statOut">—</div></div>
-        </div>
-        <div class="toolbar">
-          <div class="search-wrap">
-            <i class="ti ti-search"></i>
-            <input type="text" id="searchInput" placeholder="Search…" oninput="renderProducts()">
-          </div>
-          <select class="flt" id="catFilter" onchange="renderProducts()">
-            <option value="">All Categories</option>
-            <option>Cap</option><option>Sock</option><option>Tape</option><option>Apparel</option>
-          </select>
-          <select class="flt" id="stockFilter" onchange="renderProducts()">
-            <option value="">All Stock</option>
-            <option value="low">Low Stock</option>
-            <option value="out">Out of Stock</option>
-          </select>
-        </div>
-        <div class="tbl">
-          <table>
-            <thead><tr><th>Product</th><th>Cat</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="prodTbody">
-              <tr><td colspan="6" style="text-align:center;padding:28px;color:#aaa;">
-                <i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Loading…
-              </td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-lbl">Total SKUs</div><div class="stat-val" id="statTotal">—</div></div>
+        <div class="stat"><div class="stat-lbl">In Stock</div><div class="stat-val" id="statIn">—</div></div>
+        <div class="stat"><div class="stat-lbl">Low Stock</div><div class="stat-val" id="statLow">—</div></div>
+        <div class="stat"><div class="stat-lbl">Out of Stock</div><div class="stat-val" id="statOut">—</div></div>
       </div>
-
-      <div class="page" id="page-chat">
-        <div class="page-header">
-          <div class="page-title">Messages</div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" id="searchInput" placeholder="Search…" oninput="renderProducts()">
         </div>
-        <div class="chat-pg">
-          <div class="ac-sidebar">
-            <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
-            <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
+        <select class="flt" id="catFilter" onchange="renderProducts()">
+          <option value="">All Categories</option>
+          <option>Cap</option><option>Sock</option><option>Tape</option><option>Apparel</option>
+        </select>
+        <select class="flt" id="stockFilter" onchange="renderProducts()">
+          <option value="">All Stock</option>
+          <option value="low">Low Stock</option>
+          <option value="out">Out of Stock</option>
+        </select>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Product</th><th>Cat</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="prodTbody">
+            <tr><td colspan="6" style="text-align:center;padding:28px;color:#aaa;">
+              <i class="ti ti-loader-2" style="animation:spin 1s linear infinite;"></i> Loading…
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="page" id="page-chat">
+      <div class="page-header">
+        <div class="page-title">Messages</div>
+      </div>
+      <div class="chat-pg">
+        <div class="ac-sidebar">
+          <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
+          <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
+        </div>
+        <div class="ac-panel ac-empty" id="aCEmpty">
+          <i class="ti ti-message-circle"></i>
+          <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
+        </div>
+        <div class="ac-panel" id="aCPanel" style="display:none;">
+          <div class="ac-phdr">
+            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
+            <div><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
           </div>
-          <div class="ac-panel ac-empty" id="aCEmpty">
-            <i class="ti ti-message-circle"></i>
-            <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
-          </div>
-          <div class="ac-panel" id="aCPanel" style="display:none;">
-            <div class="ac-phdr">
-              <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
-              <div style="min-width:0; flex:1;"><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
-            </div>
-            <div class="ac-msgs" id="aCBox"></div>
-            <div class="ac-inp-row">
-              <textarea class="ac-inp" id="aCInp" placeholder="ພิມຂໍ້ຄວາມ..." rows="1" onkeydown="aKey(event)"></textarea>
-              <button class="ac-send" onclick="aSend()"><i class="ti ti-send"></i></button>
-            </div>
+          <div class="ac-msgs" id="aCBox"></div>
+          <div class="ac-inp-row">
+            <textarea class="ac-inp" id="aCInp" placeholder="ພິມຂໍ້ຄວາມ..." rows="1" onkeydown="aKey(event)"></textarea>
+            <button class="ac-send" onclick="aSend()"><i class="ti ti-send"></i></button>
           </div>
         </div>
       </div>
@@ -745,19 +766,17 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
     </div>
     <div class="modal-body">
       <input type="hidden" id="editId">
-
       <div class="field">
-        <label>ຮູບສິນຄ້າ</label>
+        <label>ຮູບສິນค้า</label>
         <div class="img-upload-box">
           <input type="file" accept="image/*" onchange="handleImgPick(event)">
           <i class="ti ti-cloud-upload"></i>
-          <span>ກົດເພື່ອເລືອກຮູບ (JPG · PNG · WEBP)</span>
+          <span>ກົດເພື່ອເລືอกຮູບ (JPG · PNG · WEBP)</span>
         </div>
         <img id="imgPreview" alt="preview">
         <div id="imgNote"></div>
       </div>
-
-      <div class="field"><label>ຊື່ສິນຄ້າ</label><input type="text" id="fName" placeholder="Trucker Cap Z1 Black"></div>
+      <div class="field"><label>ຊື່ສິນค้า</label><input type="text" id="fName" placeholder="Trucker Cap Z1 Black"></div>
       <div class="field-row">
         <div class="field"><label>SKU</label><input type="text" id="fSku" placeholder="Z1-CAP-001"></div>
         <div class="field"><label>Category</label>
@@ -765,8 +784,8 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
         </div>
       </div>
       <div class="field-row">
-        <div class="field"><label>ລາຄາ (฿)</label><input type="number" id="fPrice" placeholder="890"></div>
-        <div class="field"><label>ລາຄາອັບ (฿)</label><input type="number" id="fCompare" placeholder="990"></div>
+        <div class="field"><label>ລາຄາ (₭)</label><input type="number" id="fPrice" placeholder="890"></div>
+        <div class="field"><label>ລາຄาอับ (₭)</label><input type="number" id="fCompare" placeholder="990"></div>
       </div>
       <div class="field-row">
         <div class="field"><label>ຈຳນວນ Stock</label><input type="number" id="fStock" placeholder="50"></div>
@@ -774,12 +793,12 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;white-space:nowrap;}
       </div>
       <div class="field"><label>ລາຍລະອຽດ</label><textarea id="fDesc" placeholder="ລາຍລະອຽດສິນຄ້າ…"></textarea></div>
       <div class="field">
-        <label>Variants (ຂັ້ນດ້ວຍ/)</label>
+        <label>Variants (ັ້ນດ້ວຍ/)</label>
         <input type="text" id="fVariants" placeholder="Black / One Size, White / One Size, Navy / One Size">
         <div style="font-size:11px;color:#aaa;margin-top:4px;">ຕັວ: White / S-M, Black / S-M</div>
       </div>
       <div class="field">
-        <label>จำนวนต่อ Variant (ขັ້ນດ້ວຍຈຸດ)</label>
+        <label>จำนวนต่อ Variant (ຂັ້ນດ້ວຍຈຸດ)</label>
         <input type="text" id="fVariantStock" placeholder="42, 7, 0">
         <div style="font-size:11px;color:#aaa;margin-top:4px;">ຈຳນວນຕ້ອງຕົງກັບ Variants ດ້ານເທຶ່ງ</div>
       </div>
