@@ -41,7 +41,9 @@ const ALLOWED_EMAILS = [
 onAuthStateChanged(auth, user => {
   adminUser = user;
   if (user) {
+    // ตรวจสอบว่าเป็นเจ้าของหรือไม่
     if (!ALLOWED_EMAILS.includes((user.email||'').toLowerCase())) {
+      // ไม่ใช่เจ้าของ — logout ทันที
       signOut(auth);
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('adminApp').style.display    = 'none';
@@ -112,19 +114,19 @@ function renderProducts(){
         :`<div style="width:38px;height:38px;background:#f0f0ee;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-photo" style="color:#ccc;font-size:15px;"></i></div>`;
       return`<tr>
         <td><div style="display:flex;align-items:center;gap:10px;">${thumb}<div>
-          <div style="font-weight:500;font-size:12px;" class="prod-name-lbl">${p.name||'—'}</div>
+          <div style="font-weight:500;font-size:12px;">${p.name||'—'}</div>
           <div style="font-size:10px;color:#aaa;">${p.sku||''}</div>
         </div></div></td>
         <td style="font-size:12px;">${p.cat||'—'}</td>
-        <td style="font-weight:500;" class="prod-price-lbl">฿${(p.price||0).toLocaleString()}</td>
+        <td style="font-weight:500;">฿${(p.price||0).toLocaleString()}</td>
         <td><div style="display:flex;align-items:center;gap:6px;">
-          <div style="height:4px;background:#eee;border-radius:2px;width:60px;overflow:hidden;" class="prod-progress-bar">
+          <div style="height:4px;background:#eee;border-radius:2px;width:60px;overflow:hidden;">
             <div style="height:100%;width:${fill}%;background:${col};border-radius:2px;"></div>
           </div>
-          <span style="font-size:12px;" class="prod-stock-lbl">Stock: ${p.stock||0}</span>
+          <span style="font-size:12px;">${p.stock||0}</span>
         </div></td>
         <td><span class="badge ${st.c}">${st.l}</span></td>
-        <td><div style="display:flex;gap:5px;" class="prod-action-btns">
+        <td><div style="display:flex;gap:5px;">
           <button class="btn sm" onclick="openEdit('${id}')"><i class="ti ti-edit"></i> Edit</button>
           <button class="btn sm danger" onclick="deleteProd('${id}')"><i class="ti ti-trash"></i></button>
         </div></td>
@@ -156,7 +158,7 @@ window.openEdit=id=>{
   uploadFile=null;
   const prev=document.getElementById('imgPreview');
   prev.src=p.imageUrl||''; prev.style.display=p.imageUrl?'block':'none';
-  document.getElementById('imgNote').textContent=p.imageUrl?'มีฮูปຢູ່ແລ້ວ — ອັບໂຫຼດໃໝ່ເພື່ອປ່ຽນ':'ຍັງບໍ່ມີຮູບ';
+  document.getElementById('imgNote').textContent=p.imageUrl?'ມີຮູບຢູ່ແລ້ວ — ອັບໂຫຼດໃໝ່ເພື່ອປ່ຽນ':'ຍັງບໍ່ມີຮູບ';
   document.getElementById('modalTitle').textContent='Edit Product';
   document.getElementById('modal').classList.add('open');
 };
@@ -252,14 +254,14 @@ function renderOrders(filter=''){
   document.getElementById('orderTbody').innerHTML=list.length===0
     ?`<tr><td colspan="7" style="text-align:center;padding:28px;color:#aaa;">ยังไม่มีออเดอร์</td></tr>`
     :list.map(([id,o])=>`<tr>
-      <td style="font-weight:500;font-size:12px;" class="ord-ref-lbl">Ref: ${o.ref||id.slice(-6)}</td>
+      <td style="font-weight:500;font-size:12px;">${o.ref||id.slice(-6)}</td>
       <td><div style="font-weight:500;">${o.name||'—'}</div>
           <div style="font-size:10px;color:#aaa;">${o.email||''}</div></td>
-      <td style="font-size:11px;" class="ord-items-lbl">${o.items||'—'}</td>
-      <td style="font-weight:500;" class="ord-total-lbl">฿${(o.total||0).toLocaleString()}</td>
+      <td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.items||'—'}</td>
+      <td style="font-weight:500;">฿${(o.total||0).toLocaleString()}</td>
       <td><span class="badge ${stCls[o.status]||'gray'}">${o.status||'—'}</span></td>
-      <td style="font-size:11px;color:#aaa;white-space:nowrap;" class="ord-date-lbl">${fmt(o.createdAt)}</td>
-      <td><button class="btn sm primary ord-view-btn" onclick="openOrderPanel('${id}')">View</button></td>
+      <td style="font-size:11px;color:#aaa;white-space:nowrap;">${fmt(o.createdAt)}</td>
+      <td><button class="btn sm" onclick="openOrderPanel('${id}')">View</button></td>
     </tr>`).join('');
 }
 
@@ -460,65 +462,44 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:768px){
+  /* layout */
   .layout{display:block;}
+  /* sidebar: drawer */
   .sidebar{position:fixed;top:0;left:0;height:100%;width:240px;z-index:100;
     transform:translateX(-100%);transition:transform .25s;
     box-shadow:4px 0 24px rgba(0,0,0,.15);}
   .sidebar.open{transform:translateX(0);}
+  /* top bar */
   .top-bar{display:flex;width:100%;}
   .close-sb{display:block;}
-  .main{padding:12px;overflow-x:hidden;width:100% !important;max-width:100% !important;}
+  /* main */
+  .main{padding:12px;overflow-x:hidden;}
+  /* stats */
   .stats{grid-template-columns:1fr 1fr;gap:8px;}
   .stat-val{font-size:20px;}
+  /* forms */
   .info-grid{grid-template-columns:1fr;}
   .field-row{grid-template-columns:1fr;}
   .toolbar{flex-direction:column;}
   .search-wrap,.flt-wrap{width:100%;}
   select.flt{width:100%;}
-  
-  /* ── ແກ້ໄຂລະບົບຕາຕະລາງໃຫ້ສະແດງຜົນເຕັມຈໍ 100% ບົນມືຖື (Mobile Card) ── */
-  .tbl {background:transparent; border:none; overflow:visible; width:100%;}
-  table {width:100% !important; min-width:0 !important; max-width:100% !important; display:block;}
-  thead {display:none;} /* ຊ່ອນຫົວຕາຕະລາງ */
-  tbody {display:block; width:100%;}
-  tbody tr {
-    display:flex; flex-direction:column; gap:6px;
-    background:#fff; border:.5px solid #e8e8e8; border-radius:10px;
-    padding:14px; margin-bottom:10px; width:100% !important; box-sizing:border-box;
-  }
-  td {display:block; padding:0 !important; border:none !important; width:100% !important; text-align:left;}
-  
-  /* ຈັດຕຳແໜ່ງ Orders Card */
-  .ord-ref-lbl {font-size:11px; color:#aaa;}
-  .ord-items-lbl {
-    font-size:12px; color:#555; background:#fafaf8; 
-    padding:6px 10px !important; border-radius:6px; margin:4px 0;
-    white-space:normal !important; max-width:100% !important; overflow:visible;
-  }
-  .ord-total-lbl {font-size:14px; font-weight:600; margin-top:2px;}
-  .ord-date-lbl {font-size:11px; color:#bbb; margin-bottom:4px;}
-  .ord-view-btn {width:100% !important; display:flex !important; justify-content:center; padding:10px !important; margin-top:6px;}
-
-  /* ຈັດຕຳແໜ່ງ Products Card */
-  .prod-name-lbl {font-size:14px; font-weight:500;}
-  .prod-price-lbl {font-size:14px; font-weight:600; margin-top:2px;}
-  .prod-progress-bar {display:none !important;} /* ຊ່ອນແຖບ progress ບົນມືຖືເພື່ອຫຼຸດຄວາມຮົກ */
-  .prod-stock-lbl {font-size:12px; color:#555;}
-  .prod-action-btns {display:grid !important; grid-template-columns:1fr auto; gap:6px; margin-top:6px;}
-  .prod-action-btns .btn {display:flex; justify-content:center; padding:9px !important;}
-
+  /* table: horizontal scroll */
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;}
+  table{min-width:500px;width:max-content;max-width:none;}
+  thead th{font-size:10px;padding:8px 10px;white-space:nowrap;}
+  td{padding:9px 10px;font-size:11px;}
+  /* hide less important columns on mobile */
+  .col-hide-sm{display:none;}
   /* order panel */
   .order-panel{padding:12px;}
   .info-grid{grid-template-columns:1fr;}
-  
-  /* chat page responsive */
-  .chat-pg{grid-template-columns:1fr; height:auto; width:100% !important; max-width:100% !important;}
-  .ac-sidebar{max-height:220px; border-right:none; border-bottom:.5px solid #e8e8e8; width:100% !important;}
-  .ac-panel{height:55vh; min-height:260px; width:100% !important;}
-  
+  /* chat */
+  .chat-pg{grid-template-columns:1fr;height:auto;}
+  .ac-sidebar{max-height:220px;border-right:none;border-bottom:.5px solid #e8e8e8;}
+  .ac-panel{height:55vh;min-height:260px;}
   /* modal */
-  .modal-bg{padding:8px; align-items:flex-end;}
-  .modal{max-width:100%; border-radius:16px 16px 0 0; max-height:95vh;}
+  .modal-bg{padding:8px;align-items:flex-end;}
+  .modal{max-width:100%;border-radius:16px 16px 0 0;max-height:95vh;}
 }
 
 @media(max-width:420px){
@@ -528,8 +509,11 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
   .stat-val{font-size:18px;}
   .stat-lbl{font-size:9px;}
   .page-title{font-size:18px;}
-  .btn{padding:6px 10px; font-size:10px;}
-  .btn.sm{padding:4px 7px; font-size:9px;}
+  table{min-width:420px;}
+  thead th{padding:7px 7px;}
+  td{padding:7px 7px;font-size:11px;}
+  .btn{padding:6px 10px;font-size:10px;}
+  .btn.sm{padding:4px 7px;font-size:9px;}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -570,6 +554,8 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 .cm-me .cbb{background:#111;color:#fff;border-bottom-right-radius:3px;}
 .cm-them .cbb{background:#fff;color:#111;border:.5px solid #e8e8e8;border-bottom-left-radius:3px;}
 .ct{font-size:10px;color:#bbb;margin-top:2px;}
+/* chat responsive in main media above */
+
 
 /* ── Admin Auth ── */
 #loginScreen{position:fixed;inset:0;background:#f5f5f3;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:24px;}
@@ -585,13 +571,16 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 .logout-btn{background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:4px;}
 .logout-btn:hover{color:#e24b4a;}
 
+
 /* ── Admin login error ── */
 #loginError{background:#fff0f0;border:.5px solid #fcc;border-radius:8px;padding:12px 16px;font-size:12px;color:#c0392b;margin-top:12px;white-space:pre-line;display:none;text-align:left;line-height:1.7;}
 .login-card-sub2{font-size:11px;color:#bbb;margin-bottom:20px;line-height:1.6;}
+
 </style>
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
 <div id="loginScreen" style="display:flex;">
   <div class="login-card">
     <div class="login-card-logo">ZERO ONE</div>
@@ -606,12 +595,14 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 </div>
 
 <div class="layout" id="adminApp" style="display:none;">
+  <!-- Mobile top bar (inside adminApp only) -->
   <div class="top-bar" id="adminTopBar">
     <button class="hbg" onclick="openSB()"><i class="ti ti-menu-2"></i></button>
     <span class="top-bar-logo">ZERO ONE</span>
     <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
   </div>
   <div class="overlay" id="overlay" onclick="closeSB()"></div>
+  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="s-logo">
       <div>
@@ -632,7 +623,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       <i class="ti ti-message-circle"></i> Messages
       <span class="nav-badge" id="chatNavBadge" style="display:none;"></span>
     </div>
-    <div class="nav-sec">System</div>
+        <div class="nav-sec">System</div>
     <div class="nav-item" onclick="window.open('https://console.firebase.google.com/project/zeroone-shop/database','_blank')">
       <i class="ti ti-database"></i> Firebase Console
     </div>
@@ -644,6 +635,8 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
   </div>
 
   <div class="main">
+
+    <!-- ORDERS -->
     <div class="page active" id="page-orders">
       <div class="page-header">
         <div class="page-title">Orders</div>
@@ -691,6 +684,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
     </div>
 
+    <!-- PRODUCTS -->
     <div class="page" id="page-products">
       <div class="page-header">
         <div class="page-title">Products & Stock</div>
@@ -729,19 +723,23 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
     </div>
 
+    <!-- CHAT PAGE -->
     <div class="page" id="page-chat">
       <div class="page-header">
         <div class="page-title">Messages</div>
       </div>
       <div class="chat-pg">
+        <!-- sidebar -->
         <div class="ac-sidebar">
           <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
           <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
         </div>
+        <!-- empty state -->
         <div class="ac-panel ac-empty" id="aCEmpty">
           <i class="ti ti-message-circle"></i>
           <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
         </div>
+        <!-- active panel -->
         <div class="ac-panel" id="aCPanel" style="display:none;">
           <div class="ac-phdr">
             <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
@@ -755,9 +753,11 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
+<!-- Product Modal -->
 <div class="modal-bg" id="modal">
   <div class="modal">
     <div class="modal-hdr">
@@ -766,17 +766,20 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
     </div>
     <div class="modal-body">
       <input type="hidden" id="editId">
+
+      <!-- Image Upload -->
       <div class="field">
-        <label>ຮູບສິນค้า</label>
+        <label>ຮູບສິນຄ້າ</label>
         <div class="img-upload-box">
           <input type="file" accept="image/*" onchange="handleImgPick(event)">
           <i class="ti ti-cloud-upload"></i>
-          <span>ກົດເພື່ອເລືอกຮູບ (JPG · PNG · WEBP)</span>
+          <span>ກົດເພື່ອເລືອກຮູບ (JPG · PNG · WEBP)</span>
         </div>
         <img id="imgPreview" alt="preview">
         <div id="imgNote"></div>
       </div>
-      <div class="field"><label>ຊື່ສິນค้า</label><input type="text" id="fName" placeholder="Trucker Cap Z1 Black"></div>
+
+      <div class="field"><label>ຊື່ສິນຄ້າ</label><input type="text" id="fName" placeholder="Trucker Cap Z1 Black"></div>
       <div class="field-row">
         <div class="field"><label>SKU</label><input type="text" id="fSku" placeholder="Z1-CAP-001"></div>
         <div class="field"><label>Category</label>
@@ -785,7 +788,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
       <div class="field-row">
         <div class="field"><label>ລາຄາ (₭)</label><input type="number" id="fPrice" placeholder="890"></div>
-        <div class="field"><label>ລາຄาอับ (₭)</label><input type="number" id="fCompare" placeholder="990"></div>
+        <div class="field"><label>ລາຄາອັບ (₭)</label><input type="number" id="fCompare" placeholder="990"></div>
       </div>
       <div class="field-row">
         <div class="field"><label>ຈຳນວນ Stock</label><input type="number" id="fStock" placeholder="50"></div>
@@ -793,7 +796,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
       <div class="field"><label>ລາຍລະອຽດ</label><textarea id="fDesc" placeholder="ລາຍລະອຽດສິນຄ້າ…"></textarea></div>
       <div class="field">
-        <label>Variants (ັ້ນດ້ວຍ/)</label>
+        <label>Variants (ຂັ້ນດ້ວຍ/)</label>
         <input type="text" id="fVariants" placeholder="Black / One Size, White / One Size, Navy / One Size">
         <div style="font-size:11px;color:#aaa;margin-top:4px;">ຕັວ: White / S-M, Black / S-M</div>
       </div>
