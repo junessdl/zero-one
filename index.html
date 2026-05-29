@@ -202,7 +202,7 @@ function updateCartCount(){document.getElementById('cartCount').textContent=cart
 window.renderCart=function(){
   const el=document.getElementById('cartItems');
   if(!cart.length){
-    el.innerHTML='<div class="empty-cart"><i class="ti ti-shopping-bag"></i><div>ตะกร้าว่างอยู่</div><div style="font-size:12px;color:#bbb;margin-top:4px;">เลือกสินค้าก่อนนะ</div></div>';
+    el.innerHTML='<div class="empty-cart"><i class="ti ti-shopping-bag"></i><div>ກະຕ່າວ່າງຢູ່</div><div style="font-size:12px;color:#bbb;margin-top:4px;">ກະລຸນາເລືອກສິນຄ້າກ່ອນ</div></div>';
     document.getElementById('cartSummary').innerHTML='<a class="continue-link" onclick="showPage(\'home\')">← Continue Shopping</a>';
     return;
   }
