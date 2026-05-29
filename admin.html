@@ -53,7 +53,7 @@ onAuthStateChanged(auth, user => {
     }
     document.getElementById('loginError').style.display  = 'none';
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('adminApp').style.display    = 'flex';
+    document.getElementById('adminApp').style.display    = 'grid';
     document.getElementById('adminAvatar').src = user.photoURL||'';
     document.getElementById('adminName').textContent = user.displayName||user.email;
   } else {
@@ -326,9 +326,18 @@ window.aOpenChat=function(cid){
   update(dbRef(db,'chats/'+cid),{unread:false});
   const c=_chats[cid]||{};
   document.getElementById('aCName').textContent=c.nm||'ລູກຄ້າ';
-  document.getElementById('aCEmail').textContent=c.customerEmail||'';
+  document.getElementById('aCEmail').textContent=c.email||c.customerEmail||'';
+  // avatar
+  const avEl=document.getElementById('aCAvatar');
+  if(avEl){ avEl.innerHTML=c.photo?`<img src="${c.photo}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;">`:`<i class="ti ti-user"></i>`; }
   document.getElementById('aCPanel').style.display='flex';
   document.getElementById('aCEmpty').style.display='none';
+  // มือถือ: ซ่อน list แสดง panel เต็มจอ
+  if(window.innerWidth<=768){
+    document.getElementById('acSidebarWrap').style.display='none';
+    document.getElementById('aCPanel').classList.add('mobile-full');
+    document.getElementById('aCPanel').style.display='flex';
+  }
   if(_activeUnsub)_activeUnsub();
   _activeUnsub=onValue(dbRef(db,'chats/'+cid+'/msgs'),snap=>{
     const msgs=Object.values(snap.val()||{}).sort((a,b)=>(a.t||0)-(b.t||0));
@@ -339,6 +348,16 @@ window.aOpenChat=function(cid){
     box.scrollTop=box.scrollHeight;
   });
   setTimeout(()=>{ const i=document.getElementById('aCInp'); if(i)i.focus(); },100);
+};
+
+window.backToList=function(){
+  if(window.innerWidth<=768){
+    document.getElementById('acSidebarWrap').style.display='flex';
+    const panel=document.getElementById('aCPanel');
+    panel.style.display='none';
+    panel.classList.remove('mobile-full');
+    document.getElementById('aCEmpty').style.display='none';
+  }
 };
 
 window.aSend=function(){
@@ -356,11 +375,10 @@ function _atf(ts){return ts?new Date(ts).toLocaleTimeString('lo-LA',{hour:'2-dig
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5f3;}
-.layout{display:flex;flex-direction:column;min-height:100vh;width:100%;max-width:100%;}
-.layout-inner{display:grid;grid-template-columns:210px 1fr;flex:1;min-height:0;width:100%;}
+.layout{display:grid;grid-template-columns:210px 1fr;grid-template-rows:auto 1fr;min-height:100vh;max-width:100vw;}
 
 /* Sidebar */
-.sidebar{background:#fff;border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;flex-shrink:0;}
+.sidebar{background:#fff;border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;}
 .s-logo{padding:16px 18px;border-bottom:.5px solid #e8e8e8;display:flex;align-items:center;justify-content:space-between;}
 .s-logo-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;}
 .s-logo-sub{font-size:10px;color:#aaa;letter-spacing:.1em;text-transform:uppercase;margin-top:1px;}
@@ -373,12 +391,12 @@ body{font-family:'DM Sans',sans-serif;font-size:14px;color:#111;background:#f5f5
 .nav-badge{margin-left:auto;background:#e24b4a;color:#fff;font-size:9px;padding:2px 6px;border-radius:99px;}
 
 /* Top bar (mobile) */
-.top-bar{display:none;background:#fff;border-bottom:.5px solid #e8e8e8;padding:12px 16px;align-items:center;gap:10px;position:sticky;top:0;z-index:60;width:100%;flex-shrink:0;}
+.top-bar{display:none;background:#fff;border-bottom:.5px solid #e8e8e8;padding:12px 16px;align-items:center;gap:10px;position:sticky;top:0;z-index:60;grid-column:1/-1;}
 .top-bar-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.2em;}
 .hbg{background:none;border:none;cursor:pointer;font-size:22px;color:#111;padding:2px;}
 
 /* Main */
-.main{padding:22px 26px;overflow-x:hidden;overflow-y:auto;min-width:0;width:100%;flex:1;}
+.main{padding:22px 26px;overflow-x:hidden;overflow-y:auto;min-width:0;max-width:100%;}
 .page{display:none;} .page.active{display:block;}
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
 .page-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;}
@@ -464,8 +482,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 /* ══ RESPONSIVE ══ */
 @media(max-width:768px){
   /* layout */
-  .layout{display:flex;flex-direction:column;}
-  .layout-inner{display:block;width:100%;}
+  .layout{display:block;}
   /* sidebar: drawer */
   .sidebar{position:fixed;top:0;left:0;height:100%;width:240px;z-index:100;
     transform:translateX(-100%);transition:transform .25s;
@@ -475,7 +492,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
   .top-bar{display:flex;width:100%;}
   .close-sb{display:block;}
   /* main */
-  .main{padding:12px;width:100%;overflow-x:hidden;box-sizing:border-box;}
+  .main{padding:12px;overflow-x:hidden;}
   /* stats */
   .stats{grid-template-columns:1fr 1fr;gap:8px;}
   .stat-val{font-size:20px;}
@@ -505,7 +522,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 }
 
 @media(max-width:420px){
-  .main{padding:8px;width:100%;}
+  .main{padding:8px;}
   .stats{gap:6px;}
   .stat{padding:10px 10px;}
   .stat-val{font-size:18px;}
@@ -521,7 +538,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 
 /* ── Admin Chat Page ── */
 .chat-pg{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 80px);min-height:380px;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;overflow:hidden;}
-.ac-sidebar{border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden;}
+.ac-sidebar{border-right:.5px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .ac-sidebar-hdr{padding:13px 16px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.05em;border-bottom:.5px solid #e8e8e8;flex-shrink:0;background:#fff;}
 #aCList{flex:1;overflow-y:auto;}
 .aci{display:flex;align-items:center;gap:9px;padding:11px 13px;cursor:pointer;border-bottom:.5px solid #f0f0ee;transition:background .12s;}
@@ -548,6 +565,11 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 .ac-send:hover{background:#333;}
 .ac-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#bbb;}
 .ac-empty i{font-size:32px;}
+
+/* ── Back button (mobile chat) ── */
+.back-btn{display:none;align-items:center;justify-content:center;width:34px;height:34px;background:none;border:none;cursor:pointer;color:#111;font-size:18px;flex-shrink:0;margin-right:4px;}
+.back-btn:hover{background:#f0f0ee;border-radius:50%;}
+
 /* shared bubbles */
 .cm{display:flex;flex-direction:column;max-width:78%;}
 .cm-me{align-self:flex-end;align-items:flex-end;}
@@ -604,8 +626,6 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
     <span style="margin-left:auto;font-size:11px;color:#aaa;">Admin</span>
   </div>
   <div class="overlay" id="overlay" onclick="closeSB()"></div>
-  <!-- Sidebar + Main wrapper -->
-  <div class="layout-inner">
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div class="s-logo">
@@ -733,21 +753,28 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
         <div class="page-title">Messages</div>
       </div>
       <div class="chat-pg">
-        <!-- sidebar -->
-        <div class="ac-sidebar">
+        <!-- sidebar list -->
+        <div class="ac-sidebar" id="acSidebarWrap">
           <div class="ac-sidebar-hdr">ລາຍການລູກຄ້າ</div>
           <div id="aCList"><div style="text-align:center;padding:28px;color:#aaa;font-size:12px;">ກຳລັງໂຫຼດ...</div></div>
         </div>
-        <!-- empty state -->
+        <!-- empty state (desktop only) -->
         <div class="ac-panel ac-empty" id="aCEmpty">
           <i class="ti ti-message-circle"></i>
           <span style="font-size:13px;">ເລືອກການສົນທະນາ</span>
         </div>
-        <!-- active panel -->
+        <!-- active chat panel -->
         <div class="ac-panel" id="aCPanel" style="display:none;">
           <div class="ac-phdr">
-            <div style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user"></i></div>
-            <div><div class="ac-nm" id="aCName"></div><div class="ac-em" id="aCEmail"></div></div>
+            <!-- ปุ่ม Back (มือถือเท่านั้น) -->
+            <button class="back-btn" onclick="backToList()">
+              <i class="ti ti-arrow-left"></i>
+            </button>
+            <div id="aCAvatar" style="width:34px;height:34px;border-radius:50%;background:#f0f0ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><i class="ti ti-user"></i></div>
+            <div style="flex:1;min-width:0;">
+              <div class="ac-nm" id="aCName"></div>
+              <div class="ac-em" id="aCEmail"></div>
+            </div>
           </div>
           <div class="ac-msgs" id="aCBox"></div>
           <div class="ac-inp-row">
@@ -758,8 +785,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
       </div>
     </div>
 
-  </div><!-- /.main -->
-  </div><!-- /.layout-inner -->
+  </div>
 </div>
 
 <!-- Product Modal -->
