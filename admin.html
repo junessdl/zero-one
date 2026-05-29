@@ -503,19 +503,33 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
   .search-wrap,.flt-wrap{width:100%;}
   select.flt{width:100%;}
   /* table: horizontal scroll */
-  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;}
-  table{min-width:500px;width:max-content;max-width:none;}
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;display:block;width:100%;}
+  table{width:100%;min-width:420px;table-layout:fixed;}
   thead th{font-size:10px;padding:8px 10px;white-space:nowrap;}
-  td{padding:9px 10px;font-size:11px;}
+  td{padding:9px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;}
   /* hide less important columns on mobile */
   .col-hide-sm{display:none;}
   /* order panel */
   .order-panel{padding:12px;}
   .info-grid{grid-template-columns:1fr;}
-  /* chat */
-  .chat-pg{grid-template-columns:1fr;height:auto;}
-  .ac-sidebar{max-height:220px;border-right:none;border-bottom:.5px solid #e8e8e8;}
-  .ac-panel{height:55vh;min-height:260px;}
+  /* chat: mobile list view */
+  .chat-pg{display:block !important;height:auto;background:transparent;border:none;box-shadow:none;}
+  .ac-sidebar{width:100%;max-height:none;border-right:none;border-bottom:none;background:#fff;border-radius:10px;border:.5px solid #e8e8e8;}
+  #acSidebarWrap{display:flex;flex-direction:column;}
+  .ac-panel{display:none;height:auto;}
+  .ac-empty{display:none !important;}
+  /* chat: mobile panel fullscreen */
+  .ac-panel.mobile-full{
+    display:flex !important;
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    width:100vw;height:100vh;
+    z-index:999;
+    background:#fff;
+    border-radius:0;
+    flex-direction:column;
+  }
+  .back-btn{display:flex !important;}
   /* modal */
   .modal-bg{padding:8px;align-items:flex-end;}
   .modal{max-width:100%;border-radius:16px 16px 0 0;max-height:95vh;}
@@ -567,7 +581,7 @@ td{padding:10px 12px;font-size:12px;vertical-align:middle;}
 .ac-empty i{font-size:32px;}
 
 /* ── Back button (mobile chat) ── */
-.back-btn{display:none;align-items:center;justify-content:center;width:34px;height:34px;background:none;border:none;cursor:pointer;color:#111;font-size:18px;flex-shrink:0;margin-right:4px;}
+.back-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:none;border:none;cursor:pointer;color:#111;font-size:20px;flex-shrink:0;margin-right:6px;border-radius:50%;}
 .back-btn:hover{background:#f0f0ee;border-radius:50%;}
 
 /* shared bubbles */
